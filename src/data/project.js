@@ -29,8 +29,8 @@ const PROJECTS = [
     tech: ["React", "Tailwind","react-lucide"],
     image:
       "images/portfolioreact.png",
-    github: "https://github.com/ozgurozbekuk/newportfoliolast",
-    demo: "https://github.com/ozgurozbekuk/personal-website",
+    github: "https://github.com/ozgurozbekuk/personal-website",
+    demo: "https://ozgurozbek.netlify.app/",
   },
   {
     title: "Car Rental Website (Real Client)",
