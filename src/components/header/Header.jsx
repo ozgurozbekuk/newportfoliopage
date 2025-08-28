@@ -2,7 +2,7 @@ import React from 'react'
 import { Github, Linkedin } from "lucide-react";
 
 
-export const Header = ({ME}) => {
+const Header = ({ME}) => {
   return (
     <header className="sticky top-0 z-50 backdrop-blur supports-[backdrop-filter]:bg-white/70 border-b border-slate-200">
       <div className="container mx-auto max-w-6xl px-4 h-16 flex items-center justify-between">
@@ -41,3 +41,5 @@ export const Header = ({ME}) => {
     </header>
   )
 }
+
+export default Header;

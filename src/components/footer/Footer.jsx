@@ -1,6 +1,7 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 
-const Footer = ({ year,ME }) => {
+const Footer = ({ ME }) => {
+  const year = useMemo(() => new Date().getFullYear(), []);
   return (
     <footer className="border-t border-slate-200 bg-slate-50/60">
       <div className="container mx-auto max-w-6xl px-4 h-16 flex items-center justify-between text-sm text-slate-500">
