@@ -87,7 +87,7 @@ export default function ChatBox() {
                 <button
                   key={`${q}-${i}`}
                   onClick={() => sendMessage(q)}
-                  className="shrink-0 rounded-full border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700"
+                  className="shrink-0 cursor-pointer rounded-full border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700"
                 >
                   {q}
                 </button>
@@ -108,7 +108,7 @@ export default function ChatBox() {
             <button
               onClick={() => sendMessage()}
               disabled={loading}
-              className="rounded-xl border border-gray-600 px-3 py-2 font-semibold text-black transition hover:bg-gray-200 disabled:opacity-70 sm:min-w-[120px]"
+              className="rounded-xl cursor-pointer border border-gray-600 px-3 py-2 font-semibold text-black transition hover:bg-gray-200 disabled:opacity-70 sm:min-w-[100px]"
             >
               {loading ? "Thinking…" : (
                 <span className="inline-flex items-center gap-2">

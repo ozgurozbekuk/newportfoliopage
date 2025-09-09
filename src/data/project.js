@@ -48,7 +48,7 @@ const PROJECTS = [
     categories:[ "React"],
     description:
       "Responsive, minimal and clear Portfolio Web Site. This Web Site",
-    tech: ["React", "Tailwind","react-lucide","Motion"],
+    tech: ["React", "Tailwind","react-lucide","Motion","Gemini Api"],
     image:
       "images/lastportfolio.png",
     github: "https://github.com/ozgurozbekuk/newportfoliolast",
