@@ -1,8 +1,7 @@
-import React from 'react'
+import { Link } from "react-router-dom";
 import { Github, Linkedin } from "lucide-react";
 
-
-const Header = ({ME}) => {
+const Header = ({ ME }) => {
   return (
     <header className="sticky top-0 z-50 backdrop-blur supports-[backdrop-filter]:bg-white/70 border-b border-slate-200">
       <div className="container mx-auto max-w-6xl px-4 h-16 flex items-center justify-between">
@@ -13,9 +12,20 @@ const Header = ({ME}) => {
           </span>
         </a>
         <nav className="hidden md:flex items-center gap-6 text-sm text-slate-600">
-          <a className="hover:text-slate-900" href="#home">About</a>
-          <a className="hover:text-slate-900" href="#projects">Projects</a>
-          <a className="hover:text-slate-900" href="#contact">Contact</a>
+          <ul className="hidden md:flex items-center gap-6 text-sm text-slate-600">
+            <li>
+              <Link to="/" className="hover:text-slate-900">Home</Link>
+            </li>
+            <li>
+              <Link to="/about" className="hover:text-slate-900">About</Link>
+            </li>
+            <li>
+              <Link to="/projects" className="hover:text-slate-900">Projects</Link>
+            </li>
+            <li>
+              <Link to="/contact" className="hover:text-slate-900">Contact</Link>
+            </li>
+          </ul>
         </nav>
         <div className="flex items-center gap-2">
           <a
@@ -39,7 +49,7 @@ const Header = ({ME}) => {
         </div>
       </div>
     </header>
-  )
-}
+  );
+};
 
 export default Header;

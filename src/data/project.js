@@ -11,6 +11,39 @@ const PROJECTS = [
     demo: "https://minutly.netlify.app/",
   },
   {
+    title: "Cleaning Service Web Site (Real Client)",
+    categories: ["WordPress", "Real Life"],
+    description:
+      "Developed a responsive and SEO-friendly WordPress website in German for a moving and cleaning company in Austria, effectively showcasing their services.",
+    tech: ["WordPress","Divi", "ACF", "CSS", "SEO"],
+    image:
+      "images/entrumservice.png",
+    github: "https://github.com/ozgurozbekuk/",
+    demo: "https://entrumservice.at/",
+  },
+  {
+    title: "Car Rental Website (Real Client)",
+    categories: ["WordPress", "Real Life"],
+    description:
+      " A Car Rental site for a real client focusing on speed, SEO, and easy content management.",
+    tech: ["WordPress","Divi", "ACF", "CSS", "SEO"],
+    image:
+      "images/bosscarrental.png",
+    github: "https://github.com/ozgurozbekuk/",
+    demo: "https://bosscarental.com",
+  },
+  {
+    title: "Animated Portfolio Web Site",
+    categories: ["React"],
+    description:
+      " React portfolio website project with Framer Motion animations",
+    tech: ["React","Motion", "Three.js", "CSS"],
+    image:
+      "images/3Dportfolio.png",
+    github: "https://github.com/ozgurozbekuk/3Dportfolio",
+    demo: "https://portfoliowebsite3d.netlify.app/",
+  },
+  {
     title: "Portfolio Web Site",
     categories:[ "React"],
     description:
@@ -31,28 +64,6 @@ const PROJECTS = [
       "images/portfolioreact.png",
     github: "https://github.com/ozgurozbekuk/personal-website",
     demo: "https://ozgurozbek.netlify.app/",
-  },
-  {
-    title: "Car Rental Website (Real Client)",
-    categories: ["WordPress", "Real Life"],
-    description:
-      " A Car Rental site for a real client focusing on speed, SEO, and easy content management.",
-    tech: ["WordPress","Divi", "ACF", "CSS", "SEO"],
-    image:
-      "images/bosscarrental.png",
-    github: "https://github.com/ozgurozbekuk/",
-    demo: "https://bosscarental.com",
-  },
-  {
-    title: "Cleaning Service Web Site (Real Client)",
-    categories: ["WordPress", "Real Life"],
-    description:
-      "Developed a responsive and SEO-friendly WordPress website in German for a moving and cleaning company in Austria, effectively showcasing their services.",
-    tech: ["WordPress","Divi", "ACF", "CSS", "SEO"],
-    image:
-      "images/entrumservice.png",
-    github: "https://github.com/ozgurozbekuk/",
-    demo: "https://entrumservice.at/",
   },
   {
     title: "An AI-powered full-stack note-taking app",
