@@ -52,7 +52,7 @@ const PROJECTS = [
     image:
       "images/lastportfolio.png",
     github: "https://github.com/ozgurozbekuk/newportfoliolast",
-    demo: "https://github.com/ozgurozbekuk/newportfoliolast",
+    demo: "https://ozgurpersonalpage.netlify.app/",
   },
   {
     title: "Personal Web Site using react",
