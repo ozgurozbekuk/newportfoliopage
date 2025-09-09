@@ -9,12 +9,12 @@ const Header = ({ ME }) => {
     <header className="sticky top-0 z-50 backdrop-blur supports-[backdrop-filter]:bg-white/70 border-b border-slate-200">
       <div className="container mx-auto max-w-6xl px-4 h-16 flex items-center justify-between">
         {/* Logo */}
-        <a href="#home" className="font-medium tracking-tight text-slate-900">
+        <Link to="/" className="font-medium tracking-tight text-slate-900">
           <span className="inline-flex items-center gap-2">
             <span className="h-2 w-2 rounded-full bg-slate-900 animate-pulse" />
             {ME.name}
           </span>
-        </a>
+        </Link>
 
         {/* Desktop menu */}
         <nav className="hidden md:flex items-center gap-6 text-sm text-slate-600">
