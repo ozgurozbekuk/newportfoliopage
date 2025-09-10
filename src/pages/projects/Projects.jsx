@@ -27,9 +27,15 @@ const Projects = ({}) => {
     <section id="projects" className="py-16 md:py-20 bg-white">
       <div className="container mx-auto max-w-6xl px-4">
         <div className="mb-8 flex items-center justify-between gap-4 flex-wrap border-b border-slate-300 pb-10">
-          <h2 className="text-3xl md:text-4xl font-semibold tracking-tight">
-            Projects (In Progress)
-          </h2>
+          <div className="flex flex-col gap-2">
+            <h2 className="text-3xl md:text-4xl font-semibold tracking-tight">
+              Projects
+            </h2>
+            <p className="text-sm text-gray-500">
+              Note: Some of the projects are still in progress and currently
+              under development.
+            </p>
+          </div>
           {/* Category Buttons */}
           <div className="flex flex-wrap items-center gap-2 ">
             {CATEGORIES.map((c) => {
