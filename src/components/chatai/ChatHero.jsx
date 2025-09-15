@@ -15,6 +15,7 @@ export default function ChatBox() {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [answer, setAnswer] = useState("");
+  const [quickPrompt,setQuickPrompt] = useState("")
 
   const sendMessage = async (textOverride) => {
     const text = (textOverride ?? input).trim();
@@ -22,6 +23,7 @@ export default function ChatBox() {
 
     setLoading(true);
     setAnswer("");
+    setQuickPrompt(text)
     try {
       const res = await fetch("/.netlify/functions/chat", {
         method: "POST",
@@ -55,11 +57,11 @@ export default function ChatBox() {
             Hi, I’m Özgür’s AI assistant. I’m here to introduce Özgür — how can I help you today?
           </p>
         </div>
-
+        <div><p className="text-slate-900 dark:text-slate-400 mb-3">{quickPrompt ? quickPrompt : ""}</p></div>
         {/* Answer — responsive height + inner scroll */}
         <div className="mb-4 rounded-xl border border-slate-200 bg-white p-3 ">
           <div className="min-h-[160px] max-h-[60vh] sm:min-h-[200px] sm:max-h-[56vh] md:min-h-[220px] md:max-h-[52vh] overflow-y-auto">
-            {answer ? (
+            {loading ? (<p>Thinking... </p>): answer ? (
               <p className="whitespace-pre-wrap text-base sm:text-lg font-medium">-{answer}</p>
             ) : (
               <p className="text-slate-500 dark:text-slate-400">
