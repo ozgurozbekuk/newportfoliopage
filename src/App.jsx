@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes,Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Home from "./pages/home/Home";
 import Header from "./components/header/Header";
 import About from "./pages/about/About";
@@ -11,7 +11,7 @@ const ME = {
   title: "Full Stack / React Developer",
   description:
     "I build modern, responsive websites and web applications using React, Next.js, and WordPress. Passionate about clean design, user experience, and performance. With a problem-solving mindset, I deliver fast, functional, and visually appealing results.Below, you can find the small web applications and clone projects I created for learning purposes, as well as the projects I worked on in freelance jobs. I'm excited to collaborate and create something great together!",
-  email: "ozgurozbekuk@gmail.com",
+  email: "ozgurozbek.uk@gmail.com",
   linkedIn: "https://www.linkedin.com/in/ozgurozbekuk/",
   github: "https://github.com/ozgurozbekuk",
   heroImages: [
