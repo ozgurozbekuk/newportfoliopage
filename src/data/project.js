@@ -11,6 +11,17 @@ const PROJECTS = [
     demo: "https://minutly.netlify.app/",
   },
   {
+    title: "Twitter Clone",
+    categories: ["Fullstack", "React","AI"],
+    description:
+      "A full-stack Twitter clone built with the MERN stack (MongoDB, Express, React, Node.js). It features JWT authentication, a modern React + Tailwind CSS frontend, and efficient data fetching with React Query. Users can register, log in, create posts, like, and comment in real time, providing a social media experience similar to Twitter.",
+    tech: ["React","Node.js","MongoDB","React Query", "Tailwind"],
+    image:
+      "images/twitter.png",
+    github: "https://github.com/ozgurozbekuk/twitterX--clone",
+    demo: "https://twitter-clone-k81w.onrender.com/",
+  },
+  {
     title: "Cleaning Service Web Site (Real Client)",
     categories: ["WordPress", "Real Life"],
     description:
