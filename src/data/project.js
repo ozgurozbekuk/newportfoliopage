@@ -20,6 +20,16 @@ const PROJECTS = [
     demo: "https://twitter-clone-k81w.onrender.com/",
   },
   {
+    title: "Interview Q&A App",
+    categories: ["React", "AI"],
+    description:
+      "An interactive Interview Preparation App built with React, featuring over 600 questions and answers across various topics.The application is fully responsive, providing a smooth and accessible experience across desktop and mobile devices.Designed to support efficient study and practice with a clean and user-friendly interface.",
+    tech: ["CSS","React"],
+    image: "images/interviewapp.png",
+    github: "https://github.com/ozgurozbekuk/frontend-interview-question-app",
+    demo: "https://interviewquestionapp.netlify.app/",
+  },
+  {
     title: "Cleaning Service Web Site (Real Client)",
     categories: ["WordPress", "Real Life"],
     description:

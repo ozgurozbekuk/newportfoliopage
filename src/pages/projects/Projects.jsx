@@ -14,7 +14,9 @@ const CATEGORIES = [
   "AI",
 ];
 
-const Projects = ({}) => {
+const Projects = () => {
+  
+
   const [activeCategory, setActiveCategory] = useState("All");
 
   const filteredProjects = useMemo(() => {
@@ -41,19 +43,22 @@ const Projects = ({}) => {
             {CATEGORIES.map((c) => {
               const active = c === activeCategory;
               return (
-                <button
-                  key={c}
-                  onClick={() => setActiveCategory(c)}
-                  aria-pressed={active}
-                  className={
-                    "px-4 py-2 text-sm rounded-full border transition cursor-pointer " +
-                    (active
-                      ? "bg-slate-900 text-white border-slate-900"
-                      : "bg-white text-slate-700 border-slate-300 hover:bg-slate-100")
-                  }
-                >
-                  {c}
-                </button>
+                <>
+                  <button
+                    key={c}
+                    onClick={() => setActiveCategory(c)}
+                    aria-pressed={active}
+                    className={
+                      "px-4 py-2 text-sm rounded-full border transition cursor-pointer " +
+                      (active
+                        ? "bg-slate-900 text-white border-slate-900"
+                        : "bg-white text-slate-700 border-slate-300 hover:bg-slate-100")
+                    }
+                  >
+                    {c}
+                  </button>
+                
+                </>
               );
             })}
           </div>
