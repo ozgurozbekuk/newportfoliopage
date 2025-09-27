@@ -98,14 +98,14 @@ export default function ChatBox() {
           </div>
 
           {/* Input row: stack on mobile, row on ≥sm */}
-          <div className="mx-auto flex w-full max-w-3xl flex-col gap-2 sm:flex-row">
+          <div className="mx-auto mt-4 flex w-full max-w-3xl flex-col gap-2 sm:flex-row">
             <input
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={onKeyDown}
               placeholder="Ask about my skills, projects, contact…"
               aria-label="Ask the portfolio AI"
-              className="w-full flex-1 rounded-xl border border-gray-600 bg-white px-4 py-3 outline-none focus:border-slate-300 dark:focus:border-slate-600"
+              className="w-full flex-1 rounded-xl border border-gray-600 bg-white  px-4 py-3 outline-none focus:border-slate-300 dark:focus:border-slate-600"
             />
             <button
               onClick={() => sendMessage()}

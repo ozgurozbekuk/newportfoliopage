@@ -20,16 +20,29 @@ const Header = ({ ME }) => {
         <nav className="hidden md:flex items-center gap-6 text-sm text-slate-600">
           <ul className="flex items-center gap-6">
             <li>
-              <Link to="/" className="hover:text-slate-900">Home</Link>
+              <Link to="/" className="hover:text-slate-900">
+                Home
+              </Link>
             </li>
             <li>
-              <Link to="/about" className="hover:text-slate-900">About</Link>
+              <Link to="/about" className="hover:text-slate-900">
+                About
+              </Link>
             </li>
             <li>
-              <Link to="/projects" className="hover:text-slate-900">Projects</Link>
+              <Link to="/projects" className="hover:text-slate-900">
+                Projects
+              </Link>
             </li>
             <li>
-              <Link to="/contact" className="hover:text-slate-900">Contact</Link>
+              <Link to="/notes" className="hover:text-slate-900">
+                Notes
+              </Link>
+            </li>
+            <li>
+              <Link to="/contact" className="hover:text-slate-900">
+                Contact
+              </Link>
             </li>
           </ul>
         </nav>
@@ -71,16 +84,24 @@ const Header = ({ ME }) => {
         <div className="md:hidden border-t border-slate-200 bg-white px-4 py-3">
           <ul className="flex flex-col gap-3 text-sm text-slate-600">
             <li>
-              <Link to="/" onClick={() => setOpen(false)}>Home</Link>
+              <Link to="/" onClick={() => setOpen(false)}>
+                Home
+              </Link>
             </li>
             <li>
-              <Link to="/about" onClick={() => setOpen(false)}>About</Link>
+              <Link to="/about" onClick={() => setOpen(false)}>
+                About
+              </Link>
             </li>
             <li>
-              <Link to="/projects" onClick={() => setOpen(false)}>Projects</Link>
+              <Link to="/projects" onClick={() => setOpen(false)}>
+                Projects
+              </Link>
             </li>
             <li>
-              <Link to="/contact" onClick={() => setOpen(false)}>Contact</Link>
+              <Link to="/contact" onClick={() => setOpen(false)}>
+                Contact
+              </Link>
             </li>
           </ul>
         </div>

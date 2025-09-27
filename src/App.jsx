@@ -5,6 +5,8 @@ import About from "./pages/about/About";
 import Projects from "./pages/projects/Projects";
 import Contact from "./pages/contact/Contact";
 import Footer from "./components/footer/Footer";
+import NotesList from "./pages/notes/NotesList";
+import NotePage from "./pages/notes/NotePage";
 
 const ME = {
   name: "Özgür Özbek",
@@ -30,6 +32,8 @@ function App() {
           <Route path="/about" element={<About ME={ME} />} />
           <Route path="/contact" element={<Contact ME={ME} />} />
           <Route path="/projects" element={<Projects ME={ME} />} />
+          <Route path="/notes" element={<NotesList />} />
+          <Route path="/notes/:slug" element={<NotePage />} />
         </Routes>
         <Footer ME={ME} />
       </Router>
