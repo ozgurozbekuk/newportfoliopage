@@ -99,6 +99,11 @@ const Header = ({ ME }) => {
               </Link>
             </li>
             <li>
+              <Link to="/notes" onClick={() => setOpen(false)}>
+                Notes
+              </Link>
+            </li>
+            <li>
               <Link to="/contact" onClick={() => setOpen(false)}>
                 Contact
               </Link>
