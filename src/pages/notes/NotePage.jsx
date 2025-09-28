@@ -1,4 +1,3 @@
-// src/pages/NotePage.jsx
 import { useEffect, useMemo, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { posts } from "../../data/posts";
@@ -38,12 +37,12 @@ export default function NotePage() {
       <Link to="/notes" className="no-underline hover:underline text-sm text-gray-600">
         ← Back
       </Link>
-      <h1 className="mb-2 text-2xl font-bold">{meta.title}</h1>
+      <h1 className="mb-2 text-3xl font-bold">{meta.title}</h1>
       <p className="mt-0 text-sm text-gray-500">
         {new Date(meta.date).toLocaleDateString()}
       </p>
 
-      <div className="whitespace-pre-line">{content}</div>
+      <div className="whitespace-pre-line text-xl">{content}</div>
     </article>
   );
 }
