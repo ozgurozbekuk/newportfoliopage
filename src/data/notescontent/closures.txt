@@ -27,8 +27,6 @@ Closures are useful because they let you:
 A Simple Example
 
 
-![Hoisting diagram](/closures.png)
-
 function outer() {
   let message = "Hello";
 
