@@ -1,10 +1,10 @@
 const PROJECTS = [
   {
     title: "Minutly – Smart Task & Time Management App",
-    categories: ["React"],
+    categories: ["React","Fullstack"],
     description:
-      "A modern task management application featuring drag-and-drop task flow, an integrated Pomodoro timer, and a time tracker that records how much time you spend on each task. Easily organize your workflow, boost productivity, and stay on top of your progress—all in one place.",
-    tech: ["React", "Context", "Tailwind", "Firebase"],
+      "Full-stack productivity suite that combines task planning, time tracking, and focus tools in one place. The project ships a React + Vite single-page application backed by an Express API with MongoDB persistence and JWT-secured authentication.",
+    tech: ["React","Node.js","MongoDB","Express.js", "Context", "Tailwind","Axios","JWT","CORS",],
     image: "images/minutly.png",
     github: "https://github.com/ozgurozbekuk/time-manager",
     demo: "https://minutly.netlify.app/",
