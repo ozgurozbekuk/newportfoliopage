@@ -8,7 +8,7 @@ export default function NotesList() {
 
 
   return (
-    <section className="h-[80vh] mx-auto max-w-6xl px-4 py-10">
+    <section className=" mx-auto max-w-6xl px-4 py-10">
       <header className="mb-8">
         <h1 className="text-2xl font-bold">My Notes & Blog Posts</h1>
         <p className="mt-1 text-gray-600">

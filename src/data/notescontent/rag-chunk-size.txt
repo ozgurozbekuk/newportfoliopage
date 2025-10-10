@@ -1,0 +1,61 @@
+Finding the Best Chunk Size for RAG
+
+Chunk size is the quiet lever that decides how helpful or how clueless a Retrieval-Augmented Generation system feels. Too big and every answer gets noisy. Too small and the model sees sentences with no context. Dialing it in takes a mix of intuition, benchmarking, and a steady feedback loop.
+
+---
+
+Why Chunk Size Matters
+
+- Retrieval models compare vector distance, so overly large chunks blur distinct ideas and hurt recall.
+- LLM prompts have token limits; giant chunks eat context budget before the question is even processed.
+- Chunk boundaries change how citations read. Clean paragraph cuts feel deliberate; random mid-sentence breaks feel broken.
+
+---
+
+My Baseline Process
+
+1. Start with 400 to 500 tokens per chunk for prose-heavy docs, 150 to 250 for Q&A or code snippets.
+2. Always keep overlap between chunks (usually 10 to 20 percent) so context slips across boundaries.
+3. Embed and index a small representative sample first, then run retrieval smoke tests before touching the rest of the corpus.
+
+---
+
+Testing What Works
+
+I keep a fixture set of 20 to 30 canonical questions that probe different corners of the knowledge base. For each chunk configuration I run the same questions, score the top-k results manually, and log:
+
+- Whether the right source surfaced in the first three hits.
+- How much irrelevant context crept in.
+- The final token count of the assembled prompt.
+
+Numbers do not tell the full story, so I eyeball answer quality too. If the LLM starts repeating sentences or hedging, the chunks might be too narrow. If answers include unrelated sections, the chunks are too wide.
+
+---
+
+Signals Impossible to Ignore
+
+- Retrieval latency climbs sharply when chunks are large; smaller vectors move faster.
+- End users complain about half-answers when chunks are tiny; they get fragments without the follow-up sentence that actually matters.
+- Moderation or redaction errors pop up when chunking is naive. Sensitive lines sit next to public ones, so chunk thoughtfully if you need different access tiers.
+
+---
+
+Quick Tooling Tips
+
+- Log per-query prompt token counts to a metrics dashboard so you can watch for spikes.
+- Use a notebook to diff chunk configurations side by side and highlight the retrieved text that changed.
+- Automate evaluation with something like Ragas or DeepEval once your manual rubric feels solid.
+
+---
+
+Common Pitfalls
+
+- Chunking purely by character count without respecting sentence boundaries.
+- Forgetting to strip boilerplate before embedding and inflating every chunk with headers and footers.
+- Leaving zero overlap and expecting the model to piece together cross-paragraph references.
+
+---
+
+Where I Land
+
+Most of my production builds settle in the 350 to 450 token range with 15 percent overlap. That mix keeps grounding strong, keeps prompts well below the cutoff, and still reads naturally when I surface citations. Your mileage will vary, so do the boring work: measure, compare, and listen to what users say. Chunk size is not glamorous, but when you get it right the entire RAG experience feels sharp and reliable.
