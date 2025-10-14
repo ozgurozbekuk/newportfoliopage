@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Home from "./pages/home/Home";
 import Header from "./components/header/Header";
@@ -7,6 +8,7 @@ import Contact from "./pages/contact/Contact";
 import Footer from "./components/footer/Footer";
 import NotesList from "./pages/notes/NotesList";
 import NotePage from "./pages/notes/NotePage";
+import LetterGlitch from "./components/LetterGlitch";
 
 const ME = {
   name: "Özgür Özbek",
@@ -23,8 +25,51 @@ const ME = {
 };
 
 function App() {
+  const [showSplash, setShowSplash] = useState(() => {
+    if (typeof window === "undefined") {
+      return true;
+    }
+
+    return !sessionStorage.getItem("portfolioSplashSeen");
+  });
+  const [fadeSplash, setFadeSplash] = useState(false);
+
+  useEffect(() => {
+    if (!showSplash) return;
+
+    setFadeSplash(false);
+    const fadeTimer = setTimeout(() => setFadeSplash(true), 2000);
+    const hideTimer = setTimeout(() => setShowSplash(false), 2600);
+    sessionStorage.setItem("portfolioSplashSeen", "true");
+
+    return () => {
+      clearTimeout(fadeTimer);
+      clearTimeout(hideTimer);
+    };
+  }, [showSplash]);
+
   return (
     <>
+      {showSplash && (
+        <div
+          className={`fixed inset-0 z-50 flex items-center justify-center bg-black transition-opacity duration-700 ease-out ${
+            fadeSplash ? "opacity-0" : "opacity-100"
+          }`}
+        >
+          <div
+            className={`w-full h-full transition-transform duration-700 ease-out ${
+              fadeSplash ? "scale-105" : "scale-100"
+            }`}
+          >
+            <LetterGlitch
+              glitchSpeed={40}
+              centerVignette={true}
+              outerVignette={false}
+              smooth={true}
+            />
+          </div>
+        </div>
+      )}
       <Router>
         <Header ME={ME} />
         <Routes>
