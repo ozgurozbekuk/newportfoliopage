@@ -1,11 +1,20 @@
 import { motion } from "framer-motion";
-import { ArrowDown, Code2, Github, Linkedin, Mail } from "lucide-react";
-import ChatHero from "../../components/chatai/ChatHero";
+import { Code2, Github, Linkedin, Mail } from "lucide-react";
+import LogoLoop from '../../components/LogoLoop';
+import { SiReact, SiNextdotjs, SiJavascript, SiTailwindcss,SiPython } from 'react-icons/si';
+
+const techLogos = [
+  { node: <SiReact />, title: "React", href: "https://react.dev" },
+  { node: <SiNextdotjs />, title: "Next.js", href: "https://nextjs.org" },
+  { node: <SiJavascript />, title: "JavaScript", href: "https://www.javascript.com/" },
+  { node: <SiTailwindcss />, title: "Tailwind CSS", href: "https://tailwindcss.com" },
+  { node: <SiPython />, title: "Python", href: "https://www.python.org/" },
+];
 
 const About = ({ ME }) => {
   return (
     <section id="home" className="relative pt-10 pb-24">
-      <div className="container mx-auto max-w-6xl px-4 grid lg:grid-cols-2 gap-10 items-center">
+      <div className="container mx-auto mb-10 max-w-6xl px-4 grid lg:grid-cols-2 gap-10 items-center">
         <motion.div
           initial={{ opacity: 0, y: 18 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -73,6 +82,20 @@ const About = ({ ME }) => {
           ))}
         </motion.div>
       </div>
+      <div style={{ height: '200px', position: 'relative', overflow: 'hidden'}}>
+      <LogoLoop
+        logos={techLogos}
+        speed={90}
+        direction="left"
+        logoHeight={48}
+        gap={30}
+        pauseOnHover
+        scaleOnHover
+        fadeOut
+        fadeOutColor="#ffffff"
+        ariaLabel="Technology partners"
+      />
+    </div>
     </section>
   );
 };
