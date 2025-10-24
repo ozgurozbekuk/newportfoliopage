@@ -1,0 +1,316 @@
+Express → FastAPI Migration Guide (From Node.js to Python)
+
+This guide is designed to help developers who are familiar with Express.js (Node.js) quickly adapt to FastAPI (Python).
+Below you’ll find 1:1 concept mappings, usage examples, recommended project structure, authentication, validation, middleware, error handling, database setup, testing, WebSocket, and production tips.
+
+1- Mental Model: 1:1 Mapping :
+
+| Concept          | Express (Node.js)                      | FastAPI (Python)                      |              |
+| ---------------- | -------------------------------------- | ------------------------------------- | ------------ |
+| Create server    | `express()`                            | `FastAPI()`                           |              |
+| Listen           | `app.listen(3000)`                     | `uvicorn main:app --reload`           |              |
+| Route            | `app.get('/users', ...)`               | `@app.get('/users')`                  |              |
+| Path param       | `app.get('/users/:id')`                | `@app.get('/users/{id}')`             |              |
+| Query param      | `req.query.q`                          | Function argument `q: str             | None = None` |
+| Request body     | `app.use(express.json())` + `req.body` | Typed argument (`Pydantic` model)     |              |
+| Validation       | Joi / Zod / Yup                        | **Pydantic** (automatic)              |              |
+| Middleware       | `app.use(fn)`                          | `app.middleware('http')(fn)`          |              |
+| Error handling   | `app.use(errorHandler)`                | `@app.exception_handler`              |              |
+| Router modules   | `express.Router()`                     | `APIRouter()`                         |              |
+| CORS             | `cors()`                               | `CORSMiddleware`                      |              |
+| Environment vars | `process.env` + dotenv                 | `pydantic-settings` / `python-dotenv` |              |
+| Auth / JWT       | `passport`, `jsonwebtoken`             | `python-jose`, `passlib`              |              |
+| Database ORM     | Prisma / Sequelize / TypeORM           | SQLModel / SQLAlchemy / Tortoise      |              |
+| WebSocket        | `ws` / `socket.io`                     | Built-in `websocket`                  |              |
+| Docs             | Manual / Swagger plugin                | **Auto Swagger & ReDoc**              |              |
+
+2- Project Structure (Recommended):
+
+fastapi-app/
+├─ app/
+│  ├─ main.py
+│  ├─ deps.py
+│  ├─ api/
+│  │  ├─ v1/
+│  │  │  ├─ users.py
+│  │  │  └─ auth.py
+│  ├─ models.py
+│  ├─ schemas.py
+│  ├─ db.py
+│  └─ config.py
+├─ tests/
+├─ .env
+├─ pyproject.toml / requirements.txt
+└─ README.md
+
+3-Installation and Run:
+
+pip install fastapi uvicorn[standard]
+pip install pydantic-settings python-dotenv
+pip install sqlmodel sqlalchemy aiosqlite
+pip install python-jose[cryptography] passlib[bcrypt]
+pip install httpx pytest pytest-asyncio asgi-lifespan
+
+Run development server:
+uvicorn app.main:app --reload --port 3000
+# In Express, nodemon ≈ in FastAPI, --reload.
+
+4-Basic Route Example:
+
+Express:
+import express from 'express';
+const app = express();
+
+app.get('/hello', (req, res) => {
+  res.json({ message: 'Hello World' });
+});
+
+app.listen(3000);
+
+import express from 'express';
+const app = express();
+
+app.get('/hello', (req, res) => {
+  res.json({ message: 'Hello World' });
+});
+
+app.listen(3000);
+
+FastAPI:
+from fastapi import FastAPI
+app = FastAPI()
+
+@app.get('/hello')
+def hello():
+    return {"message": "Hello World"}
+
+
+5-Path & Query Parameters:
+
+Express:
+app.get('/users/:id', (req, res) => {
+  const { id } = req.params;
+  const { q } = req.query;
+  res.json({ id, q });
+});
+
+FastAPI:
+@app.get('/users/{id}')
+def read_user(id: int, q: str | None = None):
+    return {"id": id, "q": q}
+FastAPI automatically validates and documents types
+
+6-Body & Validation(Pydantic):
+
+Express-Zod:
+import { z } from 'zod';
+
+const UserSchema = z.object({
+  email: z.string().email(),
+  age: z.number().int().min(0)
+});
+
+app.post('/users', (req, res) => {
+  const parsed = UserSchema.safeParse(req.body);
+  if (!parsed.success) return res.status(400).json(parsed.error);
+  res.status(201).json(parsed.data);
+});
+
+FastAPI:
+from pydantic import BaseModel, EmailStr
+from fastapi import FastAPI
+
+class UserIn(BaseModel):
+    email: EmailStr
+    age: int
+
+app = FastAPI()
+
+@app.post('/users', status_code=201)
+def create_user(payload: UserIn):
+    return payload
+
+Response model:
+class UserOut(BaseModel):
+    id: int
+    email: EmailStr
+
+@app.post('/users', response_model=UserOut)
+def create_user(payload: UserIn):
+    return {"id": 1, "email": payload.email}
+
+
+7-Router Modularity-Controllers:
+
+Express:
+import { Router } from 'express';
+const router = Router();
+router.get('/', listUsers);
+router.post('/', createUser);
+app.use('/api/v1/users', router);
+
+FastAPI:
+from fastapi import APIRouter, FastAPI
+
+users = APIRouter(prefix="/api/v1/users", tags=["users"])
+
+@users.get('/')
+def list_users():
+    return []
+
+@users.post('/')
+def create_user():
+    return {"ok": True}
+
+app = FastAPI()
+app.include_router(users)
+
+8-Middleware:
+
+Express:
+app.use((req, res, next) => {
+  console.log(req.method, req.path);
+  next();
+});
+
+FastAPI:
+from fastapi import Request
+
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    print(request.method, request.url.path)
+    response = await call_next(request)
+    return response
+
+9-Error Handling:
+
+Express:
+app.use((err, req, res, next) => {
+  console.error(err);
+  res.status(err.status || 500).json({ message: err.message });
+});
+
+FastAPI:
+from fastapi import HTTPException
+
+@app.get('/boom')
+def boom():
+    raise HTTPException(status_code=400, detail="Bad request")
+
+10-Authentication(JWT):
+
+Helpers:
+from datetime import datetime, timedelta
+from jose import jwt
+from passlib.context import CryptContext
+
+SECRET = "CHANGE_ME"
+ALGO = "HS256"
+PWD = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+def create_access_token(sub: str, minutes: int = 60):
+    payload = {"sub": sub, "exp": datetime.utcnow() + timedelta(minutes=minutes)}
+    return jwt.encode(payload, SECRET, algorithm=ALGO)
+
+11-CORS:
+
+from fastapi.middleware.cors import CORSMiddleware
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+12-Database(SQLModel):
+
+from sqlmodel import SQLModel, Field, create_engine, Session, select
+
+engine = create_engine("sqlite:///./app.db")
+
+class User(SQLModel, table=True):
+    id: int | None = Field(default=None, primary_key=True)
+    email: str
+
+SQLModel.metadata.create_all(engine)
+
+13-Backgroung Tasks:
+
+from fastapi import BackgroundTasks
+
+@app.post('/notify')
+def notify(email: str, tasks: BackgroundTasks):
+    tasks.add_task(send_email, email)
+    return {"queued": True}
+
+14-WebSocket:
+
+from fastapi import WebSocket
+
+@app.websocket('/ws')
+async def ws_endpoint(ws: WebSocket):
+    await ws.accept()
+    while True:
+        data = await ws.receive_text()
+        await ws.send_text(f"echo: {data}")
+
+15-Static Files:
+
+from fastapi.staticfiles import StaticFiles
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
+16-Environment Variables:
+
+from pydantic_settings import BaseSettings
+
+class Settings(BaseSettings):
+    env: str = "dev"
+    db_url: str
+    secret: str
+
+    class Config:
+        env_file = ".env"
+
+settings = Settings()
+
+17-Testing(pytest + httpx):
+
+import pytest
+from httpx import AsyncClient
+from asgi_lifespan import LifespanManager
+from app.main import app
+
+@pytest.mark.asyncio
+async def test_hello():
+    async with LifespanManager(app):
+        async with AsyncClient(app=app, base_url="http://test") as ac:
+            r = await ac.get('/hello')
+            assert r.status_code == 200
+            assert r.json() == {"message": "Hello World"}
+
+18-Run in Production:
+
+gunicorn -k uvicorn.workers.UvicornWorker app.main:app -w 4 -b 0.0.0.0:3000
+
+19-Express -> FastAPI Cheatsheet : 
+app.get('/x', handler) → @app.get('/x') def handler(...): ...
+
+req.params.id → Function arg {id}
+
+req.query.q → q: str | None = None
+
+req.body → Pydantic model
+
+res.status(201).json(x) → @app.post(..., status_code=201)
+
+Middleware → @app.middleware('http')
+
+Router → APIRouter
+
+JWT → Depends(get_current_user)
+
+CORS → CORSMiddleware
+
+Swagger → Auto at /docs

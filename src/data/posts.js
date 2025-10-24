@@ -31,4 +31,12 @@ export const posts = [
     excerpt:
       "Chunking can make or break retrieval quality; here is how I tune sizes so a RAG pipeline keeps context without blowing past token limits.",
   },
+  // {
+  //   slug: "expvsfastapi",
+  //   title: "Express → FastAPI Migration Guide (From Node.js to Python)",
+  //   date: "2025-10-24",
+  //   tags: ["pytohn", "api", "express","fastapi"],
+  //   excerpt:
+  //     "This guide is designed to help developers who are familiar with Express.js (Node.js) quickly adapt to FastAPI (Python).",
+  // },
 ];
