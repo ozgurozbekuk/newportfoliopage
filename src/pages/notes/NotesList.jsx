@@ -17,7 +17,7 @@ export default function NotesList() {
       </header>
       {posts.length === 0 && <div><p className="text-center text-5xl font-bold my-10">Coming Soon!</p></div>}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-        {posts?.map((p) => (
+        {posts?.slice().reverse().map((p) => (
           <NoteCard key={p.slug} post={p} />
         ))}
       </div>

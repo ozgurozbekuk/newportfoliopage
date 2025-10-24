@@ -71,7 +71,6 @@ export default function ChatBox() {
           </div>
         </div>
 
-        {/* Fixed bottom bar */}
         <div
           className=" px-4"
           style={{
@@ -82,7 +81,6 @@ export default function ChatBox() {
               "color-mix(in srgb, var(--tw-bg-opacity, 1) transparent, transparent)",
           }}
         >
-          {/* Quick prompts: mobile horizontal scroll, larger screens wrap */}
           <div className="-mx-4 px-4 mb-2">
             <div className="mx-auto flex w-full max-w-3xl gap-2 overflow-x-auto sm:flex-wrap sm:overflow-visible">
               {QUICK_PROMPTS.map((q, i) => (
