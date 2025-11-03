@@ -4,6 +4,7 @@ export const posts = [
     title: "JavaScript Scope",
     date: "2025-09-27",
     tags: ["javascript", "basics"],
+    category: "JavaScript",
     excerpt:
       "Scope is a very important concept in JavaScript. It defines where a variable can be accessed from in your code.",
   },
@@ -12,6 +13,7 @@ export const posts = [
     title: "JavaScript Closures",
     date: "2025-09-27",
     tags: ["javascript", "basics"],
+    category: "JavaScript",
     excerpt:
       "In JavaScript, a closure is a powerful feature that allows an inner function to access variables from an outer function's scope — even after the outer function has returned.",
   },
@@ -20,6 +22,7 @@ export const posts = [
     title: "Building a Retrieval-Augmented Generation App",
     date: "2025-10-10",
     tags: ["ai", "rag", "llm"],
+    category: "AI",
     excerpt:
       "Retrieval-Augmented Generation combines vector search with LLMs so your app can answer questions using your own data with accuracy and context.",
   },
@@ -28,15 +31,17 @@ export const posts = [
     title: "Finding the Best Chunk Size for RAG",
     date: "2025-10-10",
     tags: ["ai", "rag", "chunking"],
+    category: "AI",
     excerpt:
       "Chunking can make or break retrieval quality; here is how I tune sizes so a RAG pipeline keeps context without blowing past token limits.",
   },
-  // {
-  //   slug: "expvsfastapi",
-  //   title: "Express → FastAPI Migration Guide (From Node.js to Python)",
-  //   date: "2025-10-24",
-  //   tags: ["pytohn", "api", "express","fastapi"],
-  //   excerpt:
-  //     "This guide is designed to help developers who are familiar with Express.js (Node.js) quickly adapt to FastAPI (Python).",
-  // },
+  {
+    slug: "expvsfastapi",
+    title: "Express vs FastAPI (From Node.js to Python)",
+    date: "2025-10-24",
+    tags: ["python", "api", "express", "fastapi"],
+    category: "Python",
+    excerpt:
+      "This guide is designed to help developers who are familiar with Express.js (Node.js) quickly adapt to FastAPI (Python).",
+  },
 ];

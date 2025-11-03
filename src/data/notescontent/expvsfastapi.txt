@@ -3,26 +3,28 @@ Express → FastAPI Migration Guide (From Node.js to Python)
 This guide is designed to help developers who are familiar with Express.js (Node.js) quickly adapt to FastAPI (Python).
 Below you’ll find 1:1 concept mappings, usage examples, recommended project structure, authentication, validation, middleware, error handling, database setup, testing, WebSocket, and production tips.
 
-1- Mental Model: 1:1 Mapping :
+1- Mental Model: 1:1 Mapping
 
-| Concept          | Express (Node.js)                      | FastAPI (Python)                      |              |
-| ---------------- | -------------------------------------- | ------------------------------------- | ------------ |
-| Create server    | `express()`                            | `FastAPI()`                           |              |
-| Listen           | `app.listen(3000)`                     | `uvicorn main:app --reload`           |              |
-| Route            | `app.get('/users', ...)`               | `@app.get('/users')`                  |              |
-| Path param       | `app.get('/users/:id')`                | `@app.get('/users/{id}')`             |              |
-| Query param      | `req.query.q`                          | Function argument `q: str             | None = None` |
-| Request body     | `app.use(express.json())` + `req.body` | Typed argument (`Pydantic` model)     |              |
-| Validation       | Joi / Zod / Yup                        | **Pydantic** (automatic)              |              |
-| Middleware       | `app.use(fn)`                          | `app.middleware('http')(fn)`          |              |
-| Error handling   | `app.use(errorHandler)`                | `@app.exception_handler`              |              |
-| Router modules   | `express.Router()`                     | `APIRouter()`                         |              |
-| CORS             | `cors()`                               | `CORSMiddleware`                      |              |
-| Environment vars | `process.env` + dotenv                 | `pydantic-settings` / `python-dotenv` |              |
-| Auth / JWT       | `passport`, `jsonwebtoken`             | `python-jose`, `passlib`              |              |
-| Database ORM     | Prisma / Sequelize / TypeORM           | SQLModel / SQLAlchemy / Tortoise      |              |
-| WebSocket        | `ws` / `socket.io`                     | Built-in `websocket`                  |              |
-| Docs             | Manual / Swagger plugin                | **Auto Swagger & ReDoc**              |              |
+------------------------------------------------------------------------------------------
+| Concept          | Express (Node.js)                      | FastAPI (Python)                      |
+| ---------------- | -------------------------------------- | ------------------------------------ |
+| Create server    | express()                              | FastAPI()                            |
+| Listen           | app.listen(3000)                       | uvicorn main:app --reload            |
+| Route            | app.get('/users', ...)                 | @app.get('/users')                   |
+| Path param       | app.get('/users/:id')                  | @app.get('/users/{id}')              |
+| Query param      | req.query.q                            | Function argument q: str | None=None |
+| Request body     | app.use(express.json()) + req.body     | Typed argument (Pydantic model)      |
+| Validation       | Joi / Zod / Yup                        | Pydantic (automatic)                 |
+| Middleware       | app.use(fn)                            | app.middleware('http')(fn)           |
+| Error handling   | app.use(errorHandler)                  | @app.exception_handler               |
+| Router modules   | express.Router()                       | APIRouter()                          |
+| CORS             | cors()                                 | CORSMiddleware                       |
+| Environment vars | process.env + dotenv                   | pydantic-settings / python-dotenv    |
+| Auth / JWT       | passport, jsonwebtoken                 | python-jose, passlib                 |
+| Database ORM     | Prisma / Sequelize / TypeORM           | SQLModel / SQLAlchemy / Tortoise     |
+| WebSocket        | ws / socket.io                         | Built-in websocket                   |
+| Docs             | Manual / Swagger plugin                | Auto Swagger & ReDoc                 |
+------------------------------------------------------------------------------------------
 
 2- Project Structure (Recommended):
 

@@ -1,3 +1,4 @@
+import { useMemo, useState } from "react";
 import { posts } from "../../data/posts";
 import NoteCard from "./NoteCard";
 
@@ -5,6 +6,14 @@ import NoteCard from "./NoteCard";
 
 
 export default function NotesList() {
+  const categories = ["All", "JavaScript", "Python", "AI"];
+  const [selectedCategory, setSelectedCategory] = useState("All");
+
+  const sortedPosts = useMemo(() => posts.slice().reverse(), []);
+  const filteredPosts =
+    selectedCategory === "All"
+      ? sortedPosts
+      : sortedPosts.filter((post) => post.category === selectedCategory);
 
 
   return (
@@ -15,9 +24,41 @@ export default function NotesList() {
           Welcome to my learning journal. I capture concepts I’m exploring in short, practical notes—snippets, patterns, and ‘aha’ moments—and occasionally publish longer posts when a topic needs more depth.
         </p>
       </header>
-      {posts.length === 0 && <div><p className="text-center text-5xl font-bold my-10">Coming Soon!</p></div>}
+
+      <div className="mb-8 flex flex-wrap gap-3">
+        {categories.map((category) => {
+          const isActive = selectedCategory === category;
+          return (
+            <button
+              key={category}
+              type="button"
+              onClick={() => setSelectedCategory(category)}
+              className={`rounded-full border px-4 py-1.5 text-sm font-medium transition-colors ${
+                isActive
+                  ? "border-gray-900 bg-gray-900 text-white shadow"
+                  : "border-gray-200 bg-white text-gray-700 hover:border-gray-400"
+              }`}
+            >
+              {category}
+            </button>
+          );
+        })}
+      </div>
+
+      {sortedPosts.length === 0 && (
+        <div>
+          <p className="my-10 text-center text-5xl font-bold">Coming Soon!</p>
+        </div>
+      )}
+      {sortedPosts.length > 0 && filteredPosts.length === 0 && (
+        <div>
+          <p className="my-10 text-center text-lg text-gray-600">
+            No notes in this category yet — check back soon.
+          </p>
+        </div>
+      )}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-        {posts?.slice().reverse().map((p) => (
+        {filteredPosts.map((p) => (
           <NoteCard key={p.slug} post={p} />
         ))}
       </div>
