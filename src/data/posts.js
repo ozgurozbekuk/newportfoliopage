@@ -1,5 +1,12 @@
 export const posts = [
   {
+    title: "Top K Frequent Elements (LeetCode 347)",
+    slug: "leetcode347",
+    date: "2025-11-10",
+    category: "DSA",
+    excerpt: "Counting frequencies using Map and sorting to find top K frequent elements.",
+  },
+  {
     slug: "scope",
     title: "JavaScript Scope",
     date: "2025-09-27",

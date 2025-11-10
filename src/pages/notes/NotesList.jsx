@@ -6,7 +6,7 @@ import NoteCard from "./NoteCard";
 
 
 export default function NotesList() {
-  const categories = ["All", "JavaScript", "Python", "AI"];
+  const categories = ["All", "JavaScript", "Python", "AI","DSA"];
   const [selectedCategory, setSelectedCategory] = useState("All");
 
   const sortedPosts = useMemo(() => posts.slice().reverse(), []);
