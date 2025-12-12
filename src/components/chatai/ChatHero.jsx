@@ -48,7 +48,7 @@ export default function ChatBox() {
 
   return (
     <section className="h-full px-4 pt-8">
-      <div className="mx-auto w-full max-w-3xl">
+      <div className="mx-auto flex h-full w-full max-w-3xl flex-col">
         {/* Intro header */}
         <div className="mb-4 flex items-center gap-3 rounded-xl p-3 sm:p-4">
           <Bot className="h-12 w-12 sm:h-16 sm:w-16 md:h-20 md:w-20" />
@@ -58,8 +58,8 @@ export default function ChatBox() {
           </p>
         </div>
         {/* Answer — chat-style bubbles with inner scroll */}
-        <div className="mb-4 rounded-xl border border-slate-200 bg-slate-50 p-3">
-          <div className="min-h-[160px] max-h-[60vh] sm:min-h-[200px] sm:max-h-[56vh] md:min-h-[220px] md:max-h-[52vh] overflow-y-auto">
+        <div className="mb-4 flex-1 min-h-0 rounded-xl border border-slate-200 bg-slate-50 p-3">
+          <div className="h-full overflow-y-auto">
             <div className="flex flex-col gap-4">
               {quickPrompt && (
                 <div className="flex justify-end">
