@@ -7,15 +7,14 @@ const QUICK_PROMPTS = [
   "What are Özgür’s main skills?",
   "Where can I see Özgür’s projects?",
   "How can I get in touch with Özgür?",
-  "Tell me about Özgür’s experience"
+  "Tell me about Özgür’s experience",
 ];
-
 
 export default function ChatBox() {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [answer, setAnswer] = useState("");
-  const [quickPrompt,setQuickPrompt] = useState("")
+  const [quickPrompt, setQuickPrompt] = useState("");
 
   const sendMessage = async (textOverride) => {
     const text = (textOverride ?? input).trim();
@@ -23,7 +22,7 @@ export default function ChatBox() {
 
     setLoading(true);
     setAnswer("");
-    setQuickPrompt(text)
+    setQuickPrompt(text);
     try {
       const res = await fetch("/.netlify/functions/chat", {
         method: "POST",
@@ -48,26 +47,45 @@ export default function ChatBox() {
   };
 
   return (
-    <section className="px-4 pt-8 pb-[240px] sm:pb-[220px] md:pb-[200px]">
+    <section className="h-full px-4 pt-8">
       <div className="mx-auto w-full max-w-3xl">
         {/* Intro header */}
         <div className="mb-4 flex items-center gap-3 rounded-xl p-3 sm:p-4">
           <Bot className="h-12 w-12 sm:h-16 sm:w-16 md:h-20 md:w-20" />
           <p className="text-base sm:text-lg md:text-xl font-medium leading-snug">
-            Hi, I’m Özgür’s AI assistant. I’m here to introduce Özgür — how can I help you today?
+            Hi, I’m Özgür’s AI assistant. I’m here to introduce Özgür — how can
+            I help you today?
           </p>
         </div>
-        <div><p className="text-slate-900 dark:text-slate-400 mb-3">{quickPrompt ? quickPrompt : ""}</p></div>
-        {/* Answer — responsive height + inner scroll */}
-        <div className="mb-4 rounded-xl border border-slate-200 bg-white p-3 ">
+        {/* Answer — chat-style bubbles with inner scroll */}
+        <div className="mb-4 rounded-xl border border-slate-200 bg-slate-50 p-3">
           <div className="min-h-[160px] max-h-[60vh] sm:min-h-[200px] sm:max-h-[56vh] md:min-h-[220px] md:max-h-[52vh] overflow-y-auto">
-            {loading ? (<p>Thinking... </p>): answer ? (
-              <p className="whitespace-pre-wrap text-base sm:text-lg font-medium">-{answer}</p>
-            ) : (
-              <p className="text-slate-500 dark:text-slate-400">
-                Ask me about the developer’s skills, projects, or how to get in touch.
-              </p>
-            )}
+            <div className="flex flex-col gap-4">
+              {quickPrompt && (
+                <div className="flex justify-end">
+                  <div className="max-w-[80%] rounded-2xl bg-slate-900 px-4 py-2 text-sm sm:text-base font-medium text-white shadow">
+                    {quickPrompt}
+                  </div>
+                </div>
+              )}
+              <div className="flex items-start gap-3">
+                <div className="mt-1 flex h-9 w-9 items-center justify-center rounded-full bg-slate-900 text-white">
+                  <Bot className="h-5 w-5" />
+                </div>
+                <div className="max-w-[85%] rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm sm:text-base leading-relaxed text-slate-900 shadow-sm">
+                  {loading ? (
+                    <p className="animate-pulse text-slate-500">Thinking…</p>
+                  ) : answer ? (
+                    <p className="whitespace-pre-wrap font-medium">{answer}</p>
+                  ) : (
+                    <p className="text-slate-500 dark:text-slate-400">
+                      Ask me about the developer’s skills, projects, or how to
+                      get in touch.
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -87,7 +105,7 @@ export default function ChatBox() {
                 <button
                   key={`${q}-${i}`}
                   onClick={() => sendMessage(q)}
-                  className="shrink-0 cursor-pointer rounded-full border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700"
+                  className="shrink-0 cursor-pointer text-white rounded-full border border-slate-300 dark:border-slate-700 bg-gray-600 dark:bg-gray-700 px-3 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-gray-300 hover:text-black dark:hover:bg-gray-600"
                 >
                   {q}
                 </button>
@@ -110,7 +128,9 @@ export default function ChatBox() {
               disabled={loading}
               className="rounded-xl cursor-pointer border border-gray-600 px-3 py-2 font-semibold text-black transition hover:bg-gray-200 disabled:opacity-70 sm:min-w-[100px]"
             >
-              {loading ? "Thinking…" : (
+              {loading ? (
+                "Thinking…"
+              ) : (
                 <span className="inline-flex items-center gap-2">
                   <Send size={30} />
                 </span>

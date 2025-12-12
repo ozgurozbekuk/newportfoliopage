@@ -1,5 +1,15 @@
 const PROJECTS = [
   {
+    title: "InvestorApp — A social platform where investors share insights, trends, and ideas in real time.",
+    categories: ["Next.js","Fullstack","AI"],
+    description:
+      "InvestorApp is the capstone project for the MIT Emerging Talent (ELO 2) program – It blends the familiar feed and interaction patterns of Twitter/Facebook with investor-centric features: market tickers, themed groups, and real-time reactions to price action. The goal is to demonstrate full-stack web skills and deliver a portfolio-ready, production-style product.",
+    tech: ["Next.js", "Tailwind","Typescript","PostgreSQL", "Prisma ORM"],
+    image: "images/invappfeedimage.png",
+    github: "https://github.com/ozgurozbekuk/investorapp",
+    demo: "https://investorapp.vercel.app/",
+  },
+  {
     title: "Minutly – Smart Task & Time Management App",
     categories: ["React","Fullstack"],
     description:

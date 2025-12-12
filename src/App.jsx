@@ -38,8 +38,8 @@ function App() {
     if (!showSplash) return;
 
     setFadeSplash(false);
-    const fadeTimer = setTimeout(() => setFadeSplash(true), 2000);
-    const hideTimer = setTimeout(() => setShowSplash(false), 2600);
+    const fadeTimer = setTimeout(() => setFadeSplash(true), 1000);
+    const hideTimer = setTimeout(() => setShowSplash(false), 1600);
     sessionStorage.setItem("portfolioSplashSeen", "true");
 
     return () => {
