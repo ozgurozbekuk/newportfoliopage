@@ -13,14 +13,14 @@ const techLogos = [
 
 const About = ({ ME }) => {
   return (
-    <section id="home" className="relative pt-10 pb-24">
-      <div className="container mx-auto mb-10 max-w-6xl px-4 grid lg:grid-cols-2 gap-10 items-center">
+    <section id="home" className="relative pt-10 ">
+      <div className="container mx-auto mb-10 max-w-6xl px-4 mt-4 grid lg:grid-cols-2 gap-10 items-center">
         <motion.div
           initial={{ opacity: 0, y: 18 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.4 }}
           transition={{ duration: 0.6 }}
-          className="space-y-6"
+          className="space-y-6 mt-4"
         >
           <span className="inline-flex items-center gap-2 text-sm font-medium text-slate-600">
             <Code2 className="h-4 w-4" /> React • Next.js • Node.js
@@ -82,7 +82,7 @@ const About = ({ ME }) => {
           ))}
         </motion.div>
       </div>
-      <div style={{ height: '200px', position: 'relative', overflow: 'hidden'}}>
+      <div style={{ height: '200px', position: 'relative', overflow: 'hidden', marginTop: '40px' }}>
       <LogoLoop
         logos={techLogos}
         speed={90}
