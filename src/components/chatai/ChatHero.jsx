@@ -79,7 +79,7 @@ export default function ChatBox() {
                     <p className="whitespace-pre-wrap font-medium">{answer}</p>
                   ) : (
                     <p className="text-slate-500 dark:text-slate-400">
-                      Ask me about the developer’s skills, projects, or how to
+                      Ask me about the Ozgur’s skills, projects, or how to
                       get in touch.
                     </p>
                   )}
