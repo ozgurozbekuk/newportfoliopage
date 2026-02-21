@@ -17,13 +17,33 @@ export const handler = async (event) => {
   }
 
   try {
-    const { message } = JSON.parse(event.body || "{}");
+    const env =
+      (typeof process !== "undefined" && process?.env) ||
+      (typeof import.meta !== "undefined" && import.meta?.env) ||
+      {};
+
+    const { message, history } = JSON.parse(event.body || "{}");
     if (!message) {
       return {
         statusCode: 400,
         body: JSON.stringify({ message: "message required" }),
       };
     }
+
+    const sanitizedHistory = Array.isArray(history)
+      ? history
+          .filter(
+            (item) =>
+              item &&
+              (item.role === "user" || item.role === "assistant") &&
+              typeof item.content === "string"
+          )
+          .slice(-12)
+          .map((item) => ({
+            role: item.role,
+            content: item.content.trim().slice(0, 2000),
+          }))
+      : [];
 
     const STYLE = `
 You are Özgür’s AI assistant embedded in his portfolio website.
@@ -63,12 +83,13 @@ SUMMARY
 - 2+ years in front-end development, building MERN-stack applications and progressing toward strong full-stack ownership.
 - Freelance experience delivering WordPress websites for small businesses.
 - Team-based freelance delivery with circulardesign.io (1 year).
+- Builds AI agents and Retrieval-Augmented Generation (RAG) applications for portfolio and real-world use cases.
 
 CORE SKILLS
 - Frontend: React, Next.js, TypeScript
 - Backend: Node.js, Express
 - Databases: MongoDB, PostgreSQL
-- AI/Python: Python, LLM fundamentals and AI integrations (portfolio-level)
+- AI/Python: Python, AI agent development, RAG pipeline architecture, and LLM integrations
 
 WORK HIGHLIGHTS
 - Built and shipped web projects end-to-end (scope → UI → integration → deployment-ready deliverables).
@@ -82,8 +103,9 @@ SOURCE CODE
 `;
 
     // ---------- Call OpenAI ----------
-    const apiKey = process.env.OPENAI_API_KEY;
-    const model = process.env.OPENAI_MODEL || "gpt-4.1";
+    const apiKey = env.OPENAI_API_KEY || globalThis?.Deno?.env?.get?.("OPENAI_API_KEY");
+    const model =
+      env.OPENAI_MODEL || globalThis?.Deno?.env?.get?.("OPENAI_MODEL") || "gpt-4.1";
 
     if (!apiKey) {
       return {
@@ -107,6 +129,7 @@ SOURCE CODE
           role: "system",
           content: `PROFILE:\n${PROFILE}`,
         },
+        ...sanitizedHistory,
         {
           role: "user",
           content: message,

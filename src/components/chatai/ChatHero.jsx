@@ -5,6 +5,7 @@ import { useState } from "react";
 const QUICK_PROMPTS = [
   "Can you introduce Özgür?",
   "What are Özgür’s main skills?",
+  "Does Özgür build AI agents and RAG applications?",
   "Where can I see Özgür’s projects?",
   "How can I get in touch with Özgür?",
   "Tell me about Özgür’s experience",
@@ -13,26 +14,34 @@ const QUICK_PROMPTS = [
 export default function ChatBox() {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
-  const [answer, setAnswer] = useState("");
-  const [quickPrompt, setQuickPrompt] = useState("");
+  const [messages, setMessages] = useState([]);
 
   const sendMessage = async (textOverride) => {
     const text = (textOverride ?? input).trim();
     if (!text || loading) return;
 
+    const history = messages.slice(-12);
     setLoading(true);
-    setAnswer("");
-    setQuickPrompt(text);
+    setMessages((prev) => [...prev, { role: "user", content: text }]);
     try {
       const res = await fetch("/.netlify/functions/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: text }),
+        body: JSON.stringify({ message: text, history }),
       });
       const data = await res.json();
-      setAnswer(data.reply || "…");
+      setMessages((prev) => [
+        ...prev,
+        { role: "assistant", content: data.reply || "…" },
+      ]);
     } catch {
-      setAnswer("Something went wrong. Please try again.");
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "assistant",
+          content: "Something went wrong. Please try again.",
+        },
+      ]);
     } finally {
       setLoading(false);
       if (!textOverride) setInput("");
@@ -53,38 +62,60 @@ export default function ChatBox() {
         <div className="mb-4 flex items-center gap-3 rounded-xl p-3 sm:p-4">
           <Bot className="h-12 w-12 sm:h-16 sm:w-16 md:h-20 md:w-20" />
           <p className="text-base sm:text-lg md:text-xl font-medium leading-snug">
-            Hi, I’m Özgür’s AI assistant. I’m here to introduce Özgür — how can
-            I help you today?
+            Hi, I’m Özgür’s AI assistant. I can walk you through his full-stack
+            skills, AI agent work, and RAG application projects. How can I help
+            you today?
           </p>
         </div>
         {/* Answer — chat-style bubbles with inner scroll */}
         <div className="mb-4 flex-1 min-h-0 rounded-xl border border-slate-200 bg-slate-50 p-3">
           <div className="h-full overflow-y-auto">
             <div className="flex flex-col gap-4">
-              {quickPrompt && (
-                <div className="flex justify-end">
-                  <div className="max-w-[80%] rounded-2xl bg-slate-900 px-4 py-2 text-sm sm:text-base font-medium text-white shadow">
-                    {quickPrompt}
+              {messages.length === 0 ? (
+                <div className="flex items-start gap-3">
+                  <div className="mt-1 flex h-9 w-9 items-center justify-center rounded-full bg-slate-900 text-white">
+                    <Bot className="h-5 w-5" />
+                  </div>
+                  <div className="max-w-[85%] rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm sm:text-base leading-relaxed text-slate-900 shadow-sm">
+                    <p className="text-slate-500 dark:text-slate-400">
+                      Ask me about the Ozgur’s skills, projects, or how to get
+                      in touch.
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                messages.map((msg, idx) =>
+                  msg.role === "user" ? (
+                    <div key={`msg-${idx}`} className="flex justify-end">
+                      <div className="max-w-[80%] rounded-2xl bg-slate-900 px-4 py-2 text-sm sm:text-base font-medium text-white shadow">
+                        {msg.content}
+                      </div>
+                    </div>
+                  ) : (
+                    <div key={`msg-${idx}`} className="flex items-start gap-3">
+                      <div className="mt-1 flex h-9 w-9 items-center justify-center rounded-full bg-slate-900 text-white">
+                        <Bot className="h-5 w-5" />
+                      </div>
+                      <div className="max-w-[85%] rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm sm:text-base leading-relaxed text-slate-900 shadow-sm">
+                        <p className="whitespace-pre-wrap font-medium">
+                          {msg.content}
+                        </p>
+                      </div>
+                    </div>
+                  )
+                )
+              )}
+
+              {loading && (
+                <div className="flex items-start gap-3">
+                  <div className="mt-1 flex h-9 w-9 items-center justify-center rounded-full bg-slate-900 text-white">
+                    <Bot className="h-5 w-5" />
+                  </div>
+                  <div className="max-w-[85%] rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm sm:text-base leading-relaxed text-slate-900 shadow-sm">
+                    <p className="animate-pulse text-slate-500">Thinking…</p>
                   </div>
                 </div>
               )}
-              <div className="flex items-start gap-3">
-                <div className="mt-1 flex h-9 w-9 items-center justify-center rounded-full bg-slate-900 text-white">
-                  <Bot className="h-5 w-5" />
-                </div>
-                <div className="max-w-[85%] rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm sm:text-base leading-relaxed text-slate-900 shadow-sm">
-                  {loading ? (
-                    <p className="animate-pulse text-slate-500">Thinking…</p>
-                  ) : answer ? (
-                    <p className="whitespace-pre-wrap font-medium">{answer}</p>
-                  ) : (
-                    <p className="text-slate-500 dark:text-slate-400">
-                      Ask me about the Ozgur’s skills, projects, or how to
-                      get in touch.
-                    </p>
-                  )}
-                </div>
-              </div>
             </div>
           </div>
         </div>
