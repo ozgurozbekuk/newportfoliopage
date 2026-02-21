@@ -54,7 +54,7 @@ export const handler = async (event) => {
     const body = JSON.parse(
       event.body || "{}"
     );
-    const { conversationId, message, history, sender, participantToken } = body;
+    const { conversationId, message, history, sender, participantToken, clientStatus } = body;
     const adminToken = getAdminToken(event, body);
 
     if (!conversationId || typeof conversationId !== "string") {
@@ -131,7 +131,10 @@ export const handler = async (event) => {
       };
     }
 
-    if (status === "human_active") {
+    const effectiveStatus =
+      clientStatus && clientStatus !== "ai_active" ? clientStatus : status;
+
+    if (effectiveStatus === "human_active") {
       return {
         statusCode: 200,
         headers: {
@@ -140,14 +143,14 @@ export const handler = async (event) => {
           "Access-Control-Allow-Headers": "Content-Type, x-admin-token",
         },
         body: JSON.stringify({
-          status,
+          status: effectiveStatus,
           reply: "Thanks. Özgür will reply here shortly.",
           sender: "system",
         }),
       };
     }
 
-    if (status !== "ai_active") {
+    if (effectiveStatus !== "ai_active") {
       return {
         statusCode: 200,
         headers: {
@@ -156,7 +159,7 @@ export const handler = async (event) => {
           "Access-Control-Allow-Headers": "Content-Type, x-admin-token",
         },
         body: JSON.stringify({
-          status,
+          status: effectiveStatus,
           reply:
             "Your request was sent. AI replies are paused until Özgür takes over.",
           sender: "system",

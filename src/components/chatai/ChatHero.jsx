@@ -111,6 +111,12 @@ export default function ChatBox() {
 
       if (data?.status) {
         setConversationStatus((prev) => {
+          if (
+            (prev === STATUS.WAITING || prev === STATUS.HUMAN) &&
+            data.status === STATUS.AI_ACTIVE
+          ) {
+            return prev;
+          }
           if (prev !== data.status && data.status === STATUS.HUMAN) {
             pushSystemMessage("You are now chatting directly with Özgür");
           }
@@ -165,13 +171,22 @@ export default function ChatBox() {
       });
 
       if (!res.ok) {
-        throw new Error("request-human failed");
+        let msg = "request-human failed";
+        try {
+          const err = await res.json();
+          msg = err?.message || msg;
+        } catch {
+          // keep default
+        }
+        throw new Error(msg);
       }
 
       setConversationStatus(STATUS.WAITING);
       pushSystemMessage("Özgür has been notified. Please wait…");
-    } catch {
-      pushSystemMessage("Could not notify Özgür right now. Please try again.");
+    } catch (err) {
+      pushSystemMessage(
+        `Could not notify Özgür right now. ${err?.message || "Please try again."}`
+      );
     }
   };
 
@@ -203,6 +218,7 @@ export default function ChatBox() {
           message: text,
           history,
           participantToken,
+          clientStatus: conversationStatus,
         }),
       });
 

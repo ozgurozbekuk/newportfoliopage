@@ -103,7 +103,7 @@ export const handler = async (event) => {
     return {
       statusCode: 200,
       headers: corsHeaders,
-      body: JSON.stringify({ success: true }),
+      body: JSON.stringify({ success: true, status: "waiting_for_ozgur" }),
     };
   } catch (error) {
     return {
