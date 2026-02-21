@@ -19,6 +19,7 @@ const STATUS = {
 
 const CONVERSATION_ID_KEY = "portfolio_chat_conversation_id";
 const MESSAGES_KEY_PREFIX = "portfolio_chat_messages_";
+const PARTICIPANT_TOKEN_KEY_PREFIX = "portfolio_chat_participant_token_";
 
 const createConversationId = () => {
   if (typeof crypto !== "undefined" && crypto.randomUUID) {
@@ -54,8 +55,22 @@ const getInitialMessages = (conversationId) => {
   }
 };
 
+const getParticipantToken = (conversationId) => {
+  if (typeof window === "undefined") return "";
+  const key = `${PARTICIPANT_TOKEN_KEY_PREFIX}${conversationId}`;
+  const existing = window.localStorage.getItem(key);
+  if (existing) return existing;
+  const next =
+    (typeof crypto !== "undefined" && crypto.randomUUID
+      ? crypto.randomUUID()
+      : `pt-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`);
+  window.localStorage.setItem(key, next);
+  return next;
+};
+
 export default function ChatBox() {
   const [conversationId] = useState(getInitialConversationId);
+  const [participantToken] = useState(() => getParticipantToken(conversationId));
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [conversationStatus, setConversationStatus] = useState(STATUS.AI_ACTIVE);
@@ -88,7 +103,7 @@ export default function ChatBox() {
       const res = await fetch("/.netlify/functions/get-conversation-messages", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ conversationId }),
+        body: JSON.stringify({ conversationId, participantToken }),
       });
 
       if (!res.ok) return;
@@ -146,7 +161,7 @@ export default function ChatBox() {
       const res = await fetch("/.netlify/functions/request-human", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ conversationId }),
+        body: JSON.stringify({ conversationId, participantToken }),
       });
 
       if (!res.ok) {
@@ -187,6 +202,7 @@ export default function ChatBox() {
           sender,
           message: text,
           history,
+          participantToken,
         }),
       });
 
@@ -225,10 +241,10 @@ export default function ChatBox() {
   };
 
   return (
-    <section className="h-full px-4 pt-8">
+    <section className="h-full px-4 pt-3">
       <div className="mx-auto flex h-full w-full max-w-3xl flex-col">
-        <div className="mb-4 flex items-center gap-3 rounded-xl p-3 sm:p-4">
-          <Bot className="h-12 w-12 sm:h-16 sm:w-16 md:h-20 md:w-20" />
+        <div className="mb-2 flex items-center gap-3 rounded-xl p-2 sm:p-3">
+          <Bot className="h-10 w-10 sm:h-12 sm:w-12 md:h-14 md:w-14" />
           <div>
             <p className="text-base sm:text-lg md:text-xl font-medium leading-snug">
               Hi, I’m Özgür’s AI assistant. I can walk you through his full-stack
@@ -242,7 +258,7 @@ export default function ChatBox() {
           </div>
         </div>
 
-        <div className="mb-4 flex-1 min-h-0 rounded-xl border border-slate-200 bg-slate-50 p-3">
+        <div className="mb-2 flex-1 min-h-0 rounded-xl border border-slate-200 bg-slate-50 p-2 sm:p-3">
           <div className="h-full overflow-y-auto">
             <div className="flex flex-col gap-4">
               {messages.length === 0 ? (
@@ -316,13 +332,13 @@ export default function ChatBox() {
           className="px-4"
           style={{
             paddingBottom: "max(16px, env(safe-area-inset-bottom))",
-            paddingTop: "8px",
+            paddingTop: "4px",
             background:
               "color-mix(in srgb, var(--tw-bg-opacity, 1) transparent, transparent)",
           }}
         >
           <div className="-mx-4 px-4 mb-2">
-            <div className="mx-auto mb-3 flex w-full max-w-3xl gap-2 overflow-x-auto sm:flex-wrap sm:overflow-visible">
+            <div className="mx-auto mb-2 flex w-full max-w-3xl gap-2 overflow-x-auto whitespace-nowrap">
               {QUICK_PROMPTS.map((q, i) => (
                 <button
                   key={`${q}-${i}`}
@@ -344,7 +360,7 @@ export default function ChatBox() {
             </button>
           </div>
 
-          <div className="mx-auto mt-4 flex w-full max-w-3xl flex-col gap-2 sm:flex-row">
+          <div className="mx-auto mt-2 flex w-full max-w-3xl flex-col gap-2 sm:flex-row">
             <input
               value={input}
               onChange={(e) => setInput(e.target.value)}

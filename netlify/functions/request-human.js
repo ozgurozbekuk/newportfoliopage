@@ -1,18 +1,36 @@
-import { setConversationStatus } from "./lib/conversationStore.js";
-
-const corsHeaders = {
-  "Content-Type": "application/json",
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "Content-Type",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-};
+import {
+  bindParticipantToken,
+  createApprovalToken,
+  hasParticipantAccess,
+  setConversationStatus,
+} from "./lib/conversationStore.js";
 
 const getEnv = () =>
   globalThis?.process?.env ||
   (typeof import.meta !== "undefined" && import.meta?.env) ||
   {};
 
+const getCorsOrigin = (event, env) => {
+  const requestOrigin = event.headers?.origin || "";
+  if (requestOrigin) return requestOrigin;
+
+  const siteUrl = env.SITE_URL || "";
+  try {
+    return siteUrl ? new URL(siteUrl).origin : "*";
+  } catch {
+    return "*";
+  }
+};
+
 export const handler = async (event) => {
+  const env = getEnv();
+  const corsHeaders = {
+    "Content-Type": "application/json",
+    "Access-Control-Allow-Origin": getCorsOrigin(event, env),
+    "Access-Control-Allow-Headers": "Content-Type",
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
+  };
+
   if (event.httpMethod === "OPTIONS") {
     return { statusCode: 204, headers: corsHeaders, body: "" };
   }
@@ -26,7 +44,7 @@ export const handler = async (event) => {
   }
 
   try {
-    const { conversationId } = JSON.parse(event.body || "{}");
+    const { conversationId, participantToken } = JSON.parse(event.body || "{}");
     if (!conversationId || typeof conversationId !== "string") {
       return {
         statusCode: 400,
@@ -35,22 +53,29 @@ export const handler = async (event) => {
       };
     }
 
-    const env = getEnv();
+    await bindParticipantToken(conversationId, participantToken || "");
+    if (!(await hasParticipantAccess(conversationId, participantToken || ""))) {
+      return {
+        statusCode: 403,
+        headers: corsHeaders,
+        body: JSON.stringify({ message: "Forbidden" }),
+      };
+    }
+
     const botToken = env.BOT_TOKEN || globalThis?.Deno?.env?.get?.("BOT_TOKEN");
     const telegramChatId =
       env.TELEGRAM_CHAT_ID || globalThis?.Deno?.env?.get?.("TELEGRAM_CHAT_ID");
-    const adminSecret =
-      env.ADMIN_SECRET || globalThis?.Deno?.env?.get?.("ADMIN_SECRET");
     const siteUrl =
       env.SITE_URL ||
       `https://${event.headers?.host || "yourdomain.com"}`;
+    const approvalToken = await createApprovalToken(conversationId);
 
-    setConversationStatus(conversationId, "waiting_for_ozgur");
+    await setConversationStatus(conversationId, "waiting_for_ozgur");
 
-    if (botToken && telegramChatId && adminSecret) {
+    if (botToken && telegramChatId && approvalToken) {
       const approveUrl = `${siteUrl}/.netlify/functions/approve-human?cid=${encodeURIComponent(
         conversationId
-      )}&token=${encodeURIComponent(adminSecret)}`;
+      )}&at=${encodeURIComponent(approvalToken)}`;
 
       const text = [
         "New human request 🚨",

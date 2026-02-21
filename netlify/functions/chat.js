@@ -1,16 +1,45 @@
 // netlify/functions/chat.js
 import {
   appendMessage,
+  bindParticipantToken,
   getConversationStatus,
+  hasAdminAccess,
+  hasParticipantAccess,
 } from "./lib/conversationStore.js";
 
+const getEnv = () =>
+  globalThis?.process?.env ||
+  (typeof import.meta !== "undefined" && import.meta?.env) ||
+  {};
+
+const getCorsOrigin = (event, env) => {
+  const requestOrigin = event.headers?.origin || "";
+  if (requestOrigin) return requestOrigin;
+
+  const siteUrl = env.SITE_URL || "";
+  try {
+    return siteUrl ? new URL(siteUrl).origin : "*";
+  } catch {
+    return "*";
+  }
+};
+
+const getAdminToken = (event, body) =>
+  event.headers?.["x-admin-token"] ||
+  event.headers?.["X-Admin-Token"] ||
+  body?.adminToken ||
+  "";
+
 export const handler = async (event) => {
+  const env = getEnv();
+  const corsOrigin = getCorsOrigin(event, env);
+
   if (event.httpMethod === "OPTIONS") {
     return {
       statusCode: 204,
       headers: {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Headers": "Content-Type",
+        "Access-Control-Allow-Origin": corsOrigin,
+        "Access-Control-Allow-Headers": "Content-Type, x-admin-token",
         "Access-Control-Allow-Methods": "POST, OPTIONS",
       },
       body: "",
@@ -22,14 +51,11 @@ export const handler = async (event) => {
   }
 
   try {
-    const env =
-      globalThis?.process?.env ||
-      (typeof import.meta !== "undefined" && import.meta?.env) ||
-      {};
-
-    const { conversationId, message, history, sender } = JSON.parse(
+    const body = JSON.parse(
       event.body || "{}"
     );
+    const { conversationId, message, history, sender, participantToken } = body;
+    const adminToken = getAdminToken(event, body);
 
     if (!conversationId || typeof conversationId !== "string") {
       return {
@@ -53,21 +79,49 @@ export const handler = async (event) => {
         body: JSON.stringify({ message: "message required" }),
       };
     }
-    const status = getConversationStatus(conversationId);
+    const status = await getConversationStatus(conversationId);
+    const isAdminSender = sender === "ozgur";
 
-    appendMessage(conversationId, {
-      sender: actor,
-      role: actor === "ozgur" ? "human" : "user",
+    if (isAdminSender) {
+      if (!(await hasAdminAccess(conversationId, adminToken))) {
+        return {
+          statusCode: 403,
+          headers: {
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": corsOrigin,
+            "Access-Control-Allow-Headers": "Content-Type, x-admin-token",
+          },
+          body: JSON.stringify({ message: "Forbidden" }),
+        };
+      }
+    } else {
+      await bindParticipantToken(conversationId, participantToken || "");
+      if (!(await hasParticipantAccess(conversationId, participantToken || ""))) {
+        return {
+          statusCode: 403,
+          headers: {
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": corsOrigin,
+            "Access-Control-Allow-Headers": "Content-Type, x-admin-token",
+          },
+          body: JSON.stringify({ message: "Forbidden" }),
+        };
+      }
+    }
+
+    await appendMessage(conversationId, {
+      sender: isAdminSender ? "ozgur" : actor,
+      role: isAdminSender ? "human" : "user",
       content: normalizedMessage,
     });
 
-    if (actor === "ozgur") {
+    if (isAdminSender) {
       return {
         statusCode: 200,
         headers: {
           "Content-Type": "application/json",
-          "Access-Control-Allow-Origin": "*",
-          "Access-Control-Allow-Headers": "Content-Type",
+          "Access-Control-Allow-Origin": corsOrigin,
+          "Access-Control-Allow-Headers": "Content-Type, x-admin-token",
         },
         body: JSON.stringify({
           status,
@@ -82,8 +136,8 @@ export const handler = async (event) => {
         statusCode: 200,
         headers: {
           "Content-Type": "application/json",
-          "Access-Control-Allow-Origin": "*",
-          "Access-Control-Allow-Headers": "Content-Type",
+          "Access-Control-Allow-Origin": corsOrigin,
+          "Access-Control-Allow-Headers": "Content-Type, x-admin-token",
         },
         body: JSON.stringify({
           status,
@@ -98,8 +152,8 @@ export const handler = async (event) => {
         statusCode: 200,
         headers: {
           "Content-Type": "application/json",
-          "Access-Control-Allow-Origin": "*",
-          "Access-Control-Allow-Headers": "Content-Type",
+          "Access-Control-Allow-Origin": corsOrigin,
+          "Access-Control-Allow-Headers": "Content-Type, x-admin-token",
         },
         body: JSON.stringify({
           status,
@@ -229,8 +283,8 @@ SOURCE CODE
         statusCode: r.status,
         headers: {
           "Content-Type": "application/json",
-          "Access-Control-Allow-Origin": "*",
-          "Access-Control-Allow-Headers": "Content-Type",
+          "Access-Control-Allow-Origin": corsOrigin,
+          "Access-Control-Allow-Headers": "Content-Type, x-admin-token",
         },
         body: JSON.stringify({
           message: "OpenAI request failed",
@@ -250,7 +304,7 @@ SOURCE CODE
         ?.trim() ||
       "Sorry, I couldn't generate a response.";
 
-    appendMessage(conversationId, {
+    await appendMessage(conversationId, {
       sender: "assistant",
       role: "assistant",
       content: reply,
@@ -260,9 +314,8 @@ SOURCE CODE
       statusCode: 200,
       headers: {
         "Content-Type": "application/json",
-        // CORS (ok for local dev; tighten if needed)
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Headers": "Content-Type",
+        "Access-Control-Allow-Origin": corsOrigin,
+        "Access-Control-Allow-Headers": "Content-Type, x-admin-token",
       },
       body: JSON.stringify({ status, reply, sender: "assistant" }),
     };

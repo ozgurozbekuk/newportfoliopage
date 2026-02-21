@@ -4,6 +4,7 @@ import { useSearchParams } from "react-router-dom";
 export default function AdminChat() {
   const [params] = useSearchParams();
   const [conversationId, setConversationId] = useState(params.get("cid") || "");
+  const [adminToken, setAdminToken] = useState(params.get("adminToken") || "");
   const [status, setStatus] = useState("ai_active");
   const [messages, setMessages] = useState([]);
   const [message, setMessage] = useState("");
@@ -11,13 +12,17 @@ export default function AdminChat() {
 
   const loadConversation = async () => {
     const cid = conversationId.trim();
-    if (!cid) return;
+    const token = adminToken.trim();
+    if (!cid || !token) return;
 
     try {
       const res = await fetch("/.netlify/functions/get-conversation-messages", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ conversationId: cid }),
+        headers: {
+          "Content-Type": "application/json",
+          "x-admin-token": token,
+        },
+        body: JSON.stringify({ conversationId: cid, adminToken: token }),
       });
 
       if (!res.ok) return;
@@ -32,7 +37,7 @@ export default function AdminChat() {
   useEffect(() => {
     loadConversation();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [conversationId]);
+  }, [conversationId, adminToken]);
 
   useEffect(() => {
     const cid = conversationId.trim();
@@ -41,7 +46,7 @@ export default function AdminChat() {
     const intervalId = setInterval(loadConversation, 3000);
     return () => clearInterval(intervalId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [conversationId]);
+  }, [conversationId, adminToken]);
 
   const sendAsOzgur = async () => {
     const text = message.trim();
@@ -52,12 +57,16 @@ export default function AdminChat() {
     try {
       await fetch("/.netlify/functions/chat", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "x-admin-token": adminToken,
+        },
         body: JSON.stringify({
           conversationId: cid,
           sender: "ozgur",
           message: text,
           history: [],
+          adminToken,
         }),
       });
       setMessage("");
@@ -76,6 +85,12 @@ export default function AdminChat() {
           value={conversationId}
           onChange={(e) => setConversationId(e.target.value)}
           placeholder="Conversation ID"
+          className="w-full rounded-lg border border-slate-300 px-3 py-2"
+        />
+        <input
+          value={adminToken}
+          onChange={(e) => setAdminToken(e.target.value)}
+          placeholder="Admin token"
           className="w-full rounded-lg border border-slate-300 px-3 py-2"
         />
         <button
@@ -124,7 +139,7 @@ export default function AdminChat() {
         />
         <button
           onClick={sendAsOzgur}
-          disabled={loading || !conversationId.trim()}
+          disabled={loading || !conversationId.trim() || !adminToken.trim()}
           className="rounded-lg border border-slate-300 px-4 py-2 font-semibold hover:bg-slate-100 disabled:opacity-50"
         >
           {loading ? "Sending..." : "Send"}

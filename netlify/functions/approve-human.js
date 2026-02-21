@@ -1,4 +1,8 @@
-import { setConversationStatus } from "./lib/conversationStore.js";
+import {
+  consumeApprovalToken,
+  createAdminSessionToken,
+  setConversationStatus,
+} from "./lib/conversationStore.js";
 
 const getEnv = () =>
   globalThis?.process?.env ||
@@ -12,26 +16,27 @@ export const handler = async (event) => {
 
   try {
     const env = getEnv();
-    const adminSecret =
-      env.ADMIN_SECRET || globalThis?.Deno?.env?.get?.("ADMIN_SECRET");
 
     const params = new URLSearchParams(event.queryStringParameters || {});
     const cid = params.get("cid");
-    const token = params.get("token");
+    const approvalToken = params.get("at");
 
     if (!cid) {
       return { statusCode: 400, body: "Missing cid" };
     }
 
-    if (!adminSecret || token !== adminSecret) {
+    if (!(await consumeApprovalToken(cid, approvalToken || ""))) {
       return { statusCode: 403, body: "Forbidden" };
     }
 
-    setConversationStatus(cid, "human_active");
+    await setConversationStatus(cid, "human_active");
+    const adminSessionToken = await createAdminSessionToken(cid);
     const siteUrl =
       env.SITE_URL ||
       `https://${event.headers?.host || "yourdomain.com"}`;
-    const adminUrl = `${siteUrl}/admin-chat?cid=${encodeURIComponent(cid)}`;
+    const adminUrl = `${siteUrl}/admin-chat?cid=${encodeURIComponent(
+      cid
+    )}&adminToken=${encodeURIComponent(adminSessionToken)}`;
 
     return {
       statusCode: 200,

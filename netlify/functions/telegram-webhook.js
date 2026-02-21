@@ -42,6 +42,10 @@ export const handler = async (event) => {
       event.headers?.["X-Telegram-Bot-Api-Secret-Token"] ||
       "";
 
+    if (!webhookSecret || !allowedChatId) {
+      return { statusCode: 500, body: "Webhook misconfigured" };
+    }
+
     if (webhookSecret && incomingSecret !== webhookSecret) {
       return { statusCode: 403, body: "Forbidden" };
     }
@@ -73,8 +77,8 @@ export const handler = async (event) => {
         return { statusCode: 200, body: "ok" };
       }
 
-      setConversationStatus(cid, "human_active");
-      appendMessage(cid, {
+      await setConversationStatus(cid, "human_active");
+      await appendMessage(cid, {
         sender: "ozgur",
         role: "human",
         content: replyText,
@@ -87,7 +91,7 @@ export const handler = async (event) => {
     const approveCmd = text.match(/^\/approve\s+([^\s]+)/i);
     if (approveCmd) {
       const cid = approveCmd[1];
-      setConversationStatus(cid, "human_active");
+      await setConversationStatus(cid, "human_active");
       await sendTelegramMessage(botToken, chatId, `Approved ${cid}.`);
       return { statusCode: 200, body: "ok" };
     }
@@ -95,7 +99,7 @@ export const handler = async (event) => {
     const aiCmd = text.match(/^\/ai\s+([^\s]+)/i);
     if (aiCmd) {
       const cid = aiCmd[1];
-      setConversationStatus(cid, "ai_active");
+      await setConversationStatus(cid, "ai_active");
       await sendTelegramMessage(botToken, chatId, `AI re-enabled for ${cid}.`);
       return { statusCode: 200, body: "ok" };
     }
@@ -103,7 +107,7 @@ export const handler = async (event) => {
     const closeCmd = text.match(/^\/close\s+([^\s]+)/i);
     if (closeCmd) {
       const cid = closeCmd[1];
-      setConversationStatus(cid, "closed");
+      await setConversationStatus(cid, "closed");
       await sendTelegramMessage(botToken, chatId, `Closed ${cid}.`);
       return { statusCode: 200, body: "ok" };
     }
@@ -127,8 +131,8 @@ export const handler = async (event) => {
     const repliedTo = msg?.reply_to_message?.text || "";
     const cidFromReply = readConversationIdFromText(repliedTo);
     if (cidFromReply) {
-      setConversationStatus(cidFromReply, "human_active");
-      appendMessage(cidFromReply, {
+      await setConversationStatus(cidFromReply, "human_active");
+      await appendMessage(cidFromReply, {
         sender: "ozgur",
         role: "human",
         content: text,
