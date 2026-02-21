@@ -22,6 +22,11 @@ const getCorsOrigin = (event, env) => {
   }
 };
 
+const getBaseSiteUrl = (event, env) => {
+  const raw = env.SITE_URL || `https://${event.headers?.host || "yourdomain.com"}`;
+  return raw.replace(/\/+$/, "");
+};
+
 export const handler = async (event) => {
   const env = getEnv();
   const corsHeaders = {
@@ -65,9 +70,7 @@ export const handler = async (event) => {
     const botToken = env.BOT_TOKEN || globalThis?.Deno?.env?.get?.("BOT_TOKEN");
     const telegramChatId =
       env.TELEGRAM_CHAT_ID || globalThis?.Deno?.env?.get?.("TELEGRAM_CHAT_ID");
-    const siteUrl =
-      env.SITE_URL ||
-      `https://${event.headers?.host || "yourdomain.com"}`;
+    const siteUrl = getBaseSiteUrl(event, env);
     const approvalToken = await createApprovalToken(conversationId);
 
     await setConversationStatus(conversationId, "waiting_for_ozgur");

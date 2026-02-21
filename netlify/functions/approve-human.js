@@ -9,6 +9,11 @@ const getEnv = () =>
   (typeof import.meta !== "undefined" && import.meta?.env) ||
   {};
 
+const getBaseSiteUrl = (event, env) => {
+  const raw = env.SITE_URL || `https://${event.headers?.host || "yourdomain.com"}`;
+  return raw.replace(/\/+$/, "");
+};
+
 export const handler = async (event) => {
   if (event.httpMethod !== "GET") {
     return { statusCode: 405, body: "Only GET" };
@@ -31,9 +36,7 @@ export const handler = async (event) => {
 
     await setConversationStatus(cid, "human_active");
     const adminSessionToken = await createAdminSessionToken(cid);
-    const siteUrl =
-      env.SITE_URL ||
-      `https://${event.headers?.host || "yourdomain.com"}`;
+    const siteUrl = getBaseSiteUrl(event, env);
     const adminUrl = `${siteUrl}/admin-chat?cid=${encodeURIComponent(
       cid
     )}&adminToken=${encodeURIComponent(adminSessionToken)}`;
