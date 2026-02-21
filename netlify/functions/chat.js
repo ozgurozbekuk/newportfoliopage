@@ -1,5 +1,17 @@
 // netlify/functions/chat.js
 export const handler = async (event) => {
+  if (event.httpMethod === "OPTIONS") {
+    return {
+      statusCode: 204,
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Headers": "Content-Type",
+        "Access-Control-Allow-Methods": "POST, OPTIONS",
+      },
+      body: "",
+    };
+  }
+
   if (event.httpMethod !== "POST") {
     return { statusCode: 405, body: JSON.stringify({ message: "Only POST" }) };
   }
@@ -69,38 +81,73 @@ SOURCE CODE
 - GitHub: https://github.com/ozgurozbekuk
 `;
 
-    // ---------- Call Gemini ----------
-    const apiKey = process.env.GEMINI_API_KEY;
+    // ---------- Call OpenAI ----------
+    const apiKey = process.env.OPENAI_API_KEY;
+    const model = process.env.OPENAI_MODEL || "gpt-4.1";
+
     if (!apiKey) {
       return {
         statusCode: 500,
-        body: JSON.stringify({ message: "GEMINI_API_KEY missing" }),
+        body: JSON.stringify({ message: "OPENAI_API_KEY missing" }),
       };
     }
 
-    const endpoint =
-      "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent";
+    const endpoint = "https://api.openai.com/v1/responses";
 
     const payload = {
-      contents: [
+      model,
+      temperature: 0.4,
+      max_output_tokens: 380,
+      input: [
         {
-          parts: [
-            { text: `SYSTEM:\n${STYLE}\n\nPROFILE:\n${PROFILE}` },
-            { text: message },
-          ],
+          role: "system",
+          content: `STYLE:\n${STYLE}`,
+        },
+        {
+          role: "system",
+          content: `PROFILE:\n${PROFILE}`,
+        },
+        {
+          role: "user",
+          content: message,
         },
       ],
     };
 
-    const r = await fetch(`${endpoint}?key=${apiKey}`, {
+    const r = await fetch(endpoint, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`,
+      },
       body: JSON.stringify(payload),
     });
 
+    if (!r.ok) {
+      const err = await r.text();
+      return {
+        statusCode: r.status,
+        headers: {
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Headers": "Content-Type",
+        },
+        body: JSON.stringify({
+          message: "OpenAI request failed",
+          error: err,
+        }),
+      };
+    }
+
     const data = await r.json();
     const reply =
-      data?.candidates?.[0]?.content?.parts?.[0]?.text ??
+      data?.output_text ||
+      data?.output
+        ?.flatMap((item) => item?.content || [])
+        ?.filter((part) => part?.type === "output_text")
+        ?.map((part) => part?.text)
+        ?.join("\n")
+        ?.trim() ||
       "Sorry, I couldn't generate a response.";
 
     return {
