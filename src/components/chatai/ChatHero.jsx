@@ -222,6 +222,17 @@ export default function ChatBox() {
         }),
       });
 
+      if (!res.ok) {
+        let msg = `HTTP ${res.status}`;
+        try {
+          const err = await res.json();
+          msg = err?.message || msg;
+        } catch {
+          // keep default
+        }
+        throw new Error(msg);
+      }
+
       const data = await res.json();
 
       if (data?.status) {
@@ -241,8 +252,10 @@ export default function ChatBox() {
 
         setMessages((prev) => [...prev, { role, content: data.reply }]);
       }
-    } catch {
-      pushSystemMessage("Something went wrong. Please try again.");
+    } catch (err) {
+      pushSystemMessage(
+        `Something went wrong. ${err?.message || "Please try again."}`
+      );
     } finally {
       setLoading(false);
       if (!textOverride) setInput("");

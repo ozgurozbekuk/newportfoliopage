@@ -31,7 +31,10 @@ export const handler = async (event) => {
     }
 
     if (!(await consumeApprovalToken(cid, approvalToken || ""))) {
-      return { statusCode: 403, body: "Forbidden" };
+      return {
+        statusCode: 403,
+        body: "Forbidden: invalid or already-used approval token",
+      };
     }
 
     await setConversationStatus(cid, "human_active");

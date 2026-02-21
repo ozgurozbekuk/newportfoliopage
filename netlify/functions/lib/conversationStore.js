@@ -43,14 +43,15 @@ const writeToPersistentStore = async (conversationId, value) => {
 };
 
 export const getConversation = async (conversationId) => {
-  const persistent = await readFromPersistentStore(conversationId);
-  if (persistent) {
-    return persistent;
-  }
-
   const memoryExisting = MEMORY_STORE.get(conversationId);
   if (memoryExisting) {
     return memoryExisting;
+  }
+
+  const persistent = await readFromPersistentStore(conversationId);
+  if (persistent) {
+    MEMORY_STORE.set(conversationId, persistent);
+    return persistent;
   }
 
   const created = createConversationRecord(conversationId);
