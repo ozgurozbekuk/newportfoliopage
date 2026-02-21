@@ -1,6 +1,7 @@
 import {
   consumeApprovalToken,
   createAdminSessionToken,
+  getConversation,
   setConversationStatus,
 } from "./lib/conversationStore.js";
 
@@ -30,19 +31,31 @@ export const handler = async (event) => {
       return { statusCode: 400, body: "Missing cid" };
     }
 
-    if (!(await consumeApprovalToken(cid, approvalToken || ""))) {
-      return {
-        statusCode: 403,
-        body: "Forbidden: invalid or already-used approval token",
-      };
+    let convo = await getConversation(cid);
+    const consumed = await consumeApprovalToken(cid, approvalToken || "");
+
+    if (!consumed) {
+      if (convo.status !== "human_active") {
+        return {
+          statusCode: 403,
+          body: "Forbidden: invalid or already-used approval token",
+        };
+      }
+
+      if (!convo.adminSessionToken) {
+        await createAdminSessionToken(cid);
+        convo = await getConversation(cid);
+      }
+    } else {
+      await setConversationStatus(cid, "human_active");
+      await createAdminSessionToken(cid);
+      convo = await getConversation(cid);
     }
 
-    await setConversationStatus(cid, "human_active");
-    const adminSessionToken = await createAdminSessionToken(cid);
     const siteUrl = getBaseSiteUrl(event, env);
     const adminUrl = `${siteUrl}/admin-chat?cid=${encodeURIComponent(
       cid
-    )}&adminToken=${encodeURIComponent(adminSessionToken)}`;
+    )}&adminToken=${encodeURIComponent(convo.adminSessionToken || "")}`;
 
     return {
       statusCode: 200,

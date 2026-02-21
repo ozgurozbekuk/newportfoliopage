@@ -99,6 +99,7 @@ export const handler = async (event) => {
         body: JSON.stringify({
           chat_id: telegramChatId,
           text,
+          disable_web_page_preview: true,
         }),
       });
     }
