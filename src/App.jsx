@@ -9,6 +9,7 @@ import Footer from "./components/footer/Footer";
 import NotesList from "./pages/notes/NotesList";
 import NotePage from "./pages/notes/NotePage";
 import LetterGlitch from "./components/LetterGlitch";
+import AdminChat from "./pages/admin/AdminChat";
 
 const ME = {
   name: "Özgür Özbek",
@@ -79,6 +80,7 @@ function App() {
           <Route path="/projects" element={<Projects ME={ME} />} />
           <Route path="/notes" element={<NotesList />} />
           <Route path="/notes/:slug" element={<NotePage />} />
+          <Route path="/admin-chat" element={<AdminChat />} />
         </Routes>
         <Footer ME={ME} />
       </Router>

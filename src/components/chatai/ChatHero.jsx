@@ -1,6 +1,5 @@
-// src/components/ChatBox.jsx
 import { Bot, Send } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 const QUICK_PROMPTS = [
   "Can you introduce Özgür?",
@@ -11,37 +10,207 @@ const QUICK_PROMPTS = [
   "Tell me about Özgür’s experience",
 ];
 
+const STATUS = {
+  AI_ACTIVE: "ai_active",
+  WAITING: "waiting_for_ozgur",
+  HUMAN: "human_active",
+  CLOSED: "closed",
+};
+
+const CONVERSATION_ID_KEY = "portfolio_chat_conversation_id";
+const MESSAGES_KEY_PREFIX = "portfolio_chat_messages_";
+
+const createConversationId = () => {
+  if (typeof crypto !== "undefined" && crypto.randomUUID) {
+    return crypto.randomUUID();
+  }
+  return `conv-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+};
+
+const getInitialConversationId = () => {
+  if (typeof window === "undefined") {
+    return createConversationId();
+  }
+
+  const existing = window.localStorage.getItem(CONVERSATION_ID_KEY);
+  if (existing) return existing;
+
+  const next = createConversationId();
+  window.localStorage.setItem(CONVERSATION_ID_KEY, next);
+  return next;
+};
+
+const getInitialMessages = (conversationId) => {
+  if (typeof window === "undefined") return [];
+
+  const raw = window.localStorage.getItem(`${MESSAGES_KEY_PREFIX}${conversationId}`);
+  if (!raw) return [];
+
+  try {
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+};
+
 export default function ChatBox() {
+  const [conversationId] = useState(getInitialConversationId);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
-  const [messages, setMessages] = useState([]);
+  const [conversationStatus, setConversationStatus] = useState(STATUS.AI_ACTIVE);
+  const [messages, setMessages] = useState(() => getInitialMessages(conversationId));
+
+  const isAdminSession = useMemo(() => {
+    if (typeof window === "undefined") return false;
+    const params = new URLSearchParams(window.location.search);
+    return params.get("as") === "ozgur";
+  }, []);
+
+  const pushSystemMessage = (content) => {
+    setMessages((prev) => {
+      const last = prev[prev.length - 1];
+      if (last?.role === "system" && last?.content === content) {
+        return prev;
+      }
+      return [...prev, { role: "system", content }];
+    });
+  };
+
+  const mapServerMessageToUi = (item) => {
+    if (item?.sender === "ozgur") return "ozgur";
+    if (item?.sender === "assistant") return "assistant";
+    return "user";
+  };
+
+  const syncConversationFromServer = async () => {
+    try {
+      const res = await fetch("/.netlify/functions/get-conversation-messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ conversationId }),
+      });
+
+      if (!res.ok) return;
+      const data = await res.json();
+
+      if (data?.status) {
+        setConversationStatus((prev) => {
+          if (prev !== data.status && data.status === STATUS.HUMAN) {
+            pushSystemMessage("You are now chatting directly with Özgür");
+          }
+          return data.status;
+        });
+      }
+
+      const serverMessages = Array.isArray(data?.messages) ? data.messages : [];
+      const mapped = serverMessages.map((item) => ({
+        role: mapServerMessageToUi(item),
+        content: item.content || "",
+      }));
+
+      setMessages((prev) => {
+        const localNonSystem = prev.filter((m) => m.role !== "system");
+        if (mapped.length <= localNonSystem.length) return prev;
+        return [...prev, ...mapped.slice(localNonSystem.length)];
+      });
+    } catch {
+      // ignore sync errors
+    }
+  };
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem(
+      `${MESSAGES_KEY_PREFIX}${conversationId}`,
+      JSON.stringify(messages)
+    );
+  }, [messages, conversationId]);
+
+  useEffect(() => {
+    syncConversationFromServer();
+  }, [conversationId]);
+
+  useEffect(() => {
+    const intervalId = setInterval(async () => {
+      await syncConversationFromServer();
+    }, 5000);
+
+    return () => clearInterval(intervalId);
+  }, [conversationId]);
+
+  const requestHumanTakeover = async () => {
+    if (loading || conversationStatus === STATUS.HUMAN) return;
+
+    try {
+      const res = await fetch("/.netlify/functions/request-human", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ conversationId }),
+      });
+
+      if (!res.ok) {
+        throw new Error("request-human failed");
+      }
+
+      setConversationStatus(STATUS.WAITING);
+      pushSystemMessage("Özgür has been notified. Please wait…");
+    } catch {
+      pushSystemMessage("Could not notify Özgür right now. Please try again.");
+    }
+  };
 
   const sendMessage = async (textOverride) => {
     const text = (textOverride ?? input).trim();
     if (!text || loading) return;
 
-    const history = messages.slice(-12);
+    const sender =
+      conversationStatus === STATUS.HUMAN && isAdminSession ? "ozgur" : "user";
+
+    const history = messages
+      .filter((m) => m.role === "user" || m.role === "assistant")
+      .slice(-12)
+      .map((m) => ({ role: m.role, content: m.content }));
+
     setLoading(true);
-    setMessages((prev) => [...prev, { role: "user", content: text }]);
+    setMessages((prev) => [
+      ...prev,
+      { role: sender === "ozgur" ? "ozgur" : "user", content: text },
+    ]);
+
     try {
       const res = await fetch("/.netlify/functions/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: text, history }),
+        body: JSON.stringify({
+          conversationId,
+          sender,
+          message: text,
+          history,
+        }),
       });
+
       const data = await res.json();
-      setMessages((prev) => [
-        ...prev,
-        { role: "assistant", content: data.reply || "…" },
-      ]);
+
+      if (data?.status) {
+        setConversationStatus(data.status);
+      }
+
+      if (data?.reply) {
+        if (sender === "ozgur" && data.sender === "ozgur") {
+          return;
+        }
+        const role =
+          data.sender === "ozgur"
+            ? "ozgur"
+            : data.sender === "system"
+            ? "system"
+            : "assistant";
+
+        setMessages((prev) => [...prev, { role, content: data.reply }]);
+      }
     } catch {
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: "assistant",
-          content: "Something went wrong. Please try again.",
-        },
-      ]);
+      pushSystemMessage("Something went wrong. Please try again.");
     } finally {
       setLoading(false);
       if (!textOverride) setInput("");
@@ -58,16 +227,21 @@ export default function ChatBox() {
   return (
     <section className="h-full px-4 pt-8">
       <div className="mx-auto flex h-full w-full max-w-3xl flex-col">
-        {/* Intro header */}
         <div className="mb-4 flex items-center gap-3 rounded-xl p-3 sm:p-4">
           <Bot className="h-12 w-12 sm:h-16 sm:w-16 md:h-20 md:w-20" />
-          <p className="text-base sm:text-lg md:text-xl font-medium leading-snug">
-            Hi, I’m Özgür’s AI assistant. I can walk you through his full-stack
-            skills, AI agent work, and RAG application projects. How can I help
-            you today?
-          </p>
+          <div>
+            <p className="text-base sm:text-lg md:text-xl font-medium leading-snug">
+              Hi, I’m Özgür’s AI assistant. I can walk you through his full-stack
+              skills, AI agent work, and RAG application projects. How can I help
+              you today?
+            </p>
+            <p className="mt-2 text-xs sm:text-sm text-slate-500">
+              Status: <span className="font-semibold">{conversationStatus}</span>
+              {isAdminSession ? " (admin session)" : ""}
+            </p>
+          </div>
         </div>
-        {/* Answer — chat-style bubbles with inner scroll */}
+
         <div className="mb-4 flex-1 min-h-0 rounded-xl border border-slate-200 bg-slate-50 p-3">
           <div className="h-full overflow-y-auto">
             <div className="flex flex-col gap-4">
@@ -78,35 +252,53 @@ export default function ChatBox() {
                   </div>
                   <div className="max-w-[85%] rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm sm:text-base leading-relaxed text-slate-900 shadow-sm">
                     <p className="text-slate-500 dark:text-slate-400">
-                      Ask me about the Ozgur’s skills, projects, or how to get
-                      in touch.
+                      Ask me about Ozgur’s skills, projects, or how to get in
+                      touch.
                     </p>
                   </div>
                 </div>
               ) : (
-                messages.map((msg, idx) =>
-                  msg.role === "user" ? (
-                    <div key={`msg-${idx}`} className="flex justify-end">
-                      <div className="max-w-[80%] rounded-2xl bg-slate-900 px-4 py-2 text-sm sm:text-base font-medium text-white shadow">
-                        {msg.content}
+                messages.map((msg, idx) => {
+                  if (msg.role === "system") {
+                    return (
+                      <div key={`msg-${idx}`} className="flex justify-center">
+                        <div className="rounded-full bg-slate-200 px-3 py-1 text-xs text-slate-700">
+                          {msg.content}
+                        </div>
                       </div>
-                    </div>
-                  ) : (
+                    );
+                  }
+
+                  if (msg.role === "user") {
+                    return (
+                      <div key={`msg-${idx}`} className="flex justify-end">
+                        <div className="max-w-[80%] rounded-2xl bg-slate-900 px-4 py-2 text-sm sm:text-base font-medium text-white shadow">
+                          {msg.content}
+                        </div>
+                      </div>
+                    );
+                  }
+
+                  return (
                     <div key={`msg-${idx}`} className="flex items-start gap-3">
                       <div className="mt-1 flex h-9 w-9 items-center justify-center rounded-full bg-slate-900 text-white">
                         <Bot className="h-5 w-5" />
                       </div>
-                      <div className="max-w-[85%] rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm sm:text-base leading-relaxed text-slate-900 shadow-sm">
-                        <p className="whitespace-pre-wrap font-medium">
-                          {msg.content}
-                        </p>
+                      <div
+                        className={`max-w-[85%] rounded-2xl border px-4 py-3 text-sm sm:text-base leading-relaxed shadow-sm ${
+                          msg.role === "ozgur"
+                            ? "border-emerald-200 bg-emerald-50 text-emerald-950"
+                            : "border-slate-200 bg-white text-slate-900"
+                        }`}
+                      >
+                        <p className="whitespace-pre-wrap font-medium">{msg.content}</p>
                       </div>
                     </div>
-                  )
-                )
+                  );
+                })
               )}
 
-              {loading && (
+              {loading && conversationStatus === STATUS.AI_ACTIVE && (
                 <div className="flex items-start gap-3">
                   <div className="mt-1 flex h-9 w-9 items-center justify-center rounded-full bg-slate-900 text-white">
                     <Bot className="h-5 w-5" />
@@ -121,9 +313,8 @@ export default function ChatBox() {
         </div>
 
         <div
-          className=" px-4"
+          className="px-4"
           style={{
-            // Safe area aware padding for iOS notch
             paddingBottom: "max(16px, env(safe-area-inset-bottom))",
             paddingTop: "8px",
             background:
@@ -131,20 +322,28 @@ export default function ChatBox() {
           }}
         >
           <div className="-mx-4 px-4 mb-2">
-            <div className="mx-auto flex w-full max-w-3xl gap-2 overflow-x-auto sm:flex-wrap sm:overflow-visible">
+            <div className="mx-auto mb-3 flex w-full max-w-3xl gap-2 overflow-x-auto sm:flex-wrap sm:overflow-visible">
               {QUICK_PROMPTS.map((q, i) => (
                 <button
                   key={`${q}-${i}`}
                   onClick={() => sendMessage(q)}
-                  className="shrink-0 cursor-pointer text-white rounded-full border border-slate-300 dark:border-slate-700 bg-gray-600 dark:bg-gray-700 px-3 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-gray-300 hover:text-black dark:hover:bg-gray-600"
+                  disabled={loading || conversationStatus !== STATUS.AI_ACTIVE}
+                  className="shrink-0 cursor-pointer text-white rounded-full border border-slate-300 bg-gray-600 px-3 py-2 text-sm hover:bg-gray-300 hover:text-black disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {q}
                 </button>
               ))}
             </div>
+
+            <button
+              onClick={requestHumanTakeover}
+              disabled={loading || conversationStatus !== STATUS.AI_ACTIVE}
+              className="w-full cursor-pointer rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-800 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              💬 Talk directly with Özgür
+            </button>
           </div>
 
-          {/* Input row: stack on mobile, row on ≥sm */}
           <div className="mx-auto mt-4 flex w-full max-w-3xl flex-col gap-2 sm:flex-row">
             <input
               value={input}
@@ -152,7 +351,7 @@ export default function ChatBox() {
               onKeyDown={onKeyDown}
               placeholder="Ask about my skills, projects, contact…"
               aria-label="Ask the portfolio AI"
-              className="w-full flex-1 rounded-xl border border-gray-600 bg-white  px-4 py-3 outline-none focus:border-slate-300 dark:focus:border-slate-600"
+              className="w-full flex-1 rounded-xl border border-gray-600 bg-white px-4 py-3 outline-none focus:border-slate-300"
             />
             <button
               onClick={() => sendMessage()}

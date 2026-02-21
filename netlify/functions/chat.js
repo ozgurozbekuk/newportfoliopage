@@ -1,4 +1,9 @@
 // netlify/functions/chat.js
+import {
+  appendMessage,
+  getConversationStatus,
+} from "./lib/conversationStore.js";
+
 export const handler = async (event) => {
   if (event.httpMethod === "OPTIONS") {
     return {
@@ -18,15 +23,90 @@ export const handler = async (event) => {
 
   try {
     const env =
-      (typeof process !== "undefined" && process?.env) ||
+      globalThis?.process?.env ||
       (typeof import.meta !== "undefined" && import.meta?.env) ||
       {};
 
-    const { message, history } = JSON.parse(event.body || "{}");
-    if (!message) {
+    const { conversationId, message, history, sender } = JSON.parse(
+      event.body || "{}"
+    );
+
+    if (!conversationId || typeof conversationId !== "string") {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ message: "conversationId required" }),
+      };
+    }
+
+    if (!message || typeof message !== "string") {
       return {
         statusCode: 400,
         body: JSON.stringify({ message: "message required" }),
+      };
+    }
+
+    const actor = sender === "ozgur" ? "ozgur" : "user";
+    const normalizedMessage = message.trim();
+    if (!normalizedMessage) {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ message: "message required" }),
+      };
+    }
+    const status = getConversationStatus(conversationId);
+
+    appendMessage(conversationId, {
+      sender: actor,
+      role: actor === "ozgur" ? "human" : "user",
+      content: normalizedMessage,
+    });
+
+    if (actor === "ozgur") {
+      return {
+        statusCode: 200,
+        headers: {
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Headers": "Content-Type",
+        },
+        body: JSON.stringify({
+          status,
+          reply: normalizedMessage,
+          sender: "ozgur",
+        }),
+      };
+    }
+
+    if (status === "human_active") {
+      return {
+        statusCode: 200,
+        headers: {
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Headers": "Content-Type",
+        },
+        body: JSON.stringify({
+          status,
+          reply: "Thanks. Özgür will reply here shortly.",
+          sender: "system",
+        }),
+      };
+    }
+
+    if (status !== "ai_active") {
+      return {
+        statusCode: 200,
+        headers: {
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Headers": "Content-Type",
+        },
+        body: JSON.stringify({
+          status,
+          reply:
+            "Your request was sent. AI replies are paused until Özgür takes over.",
+          sender: "system",
+        }),
       };
     }
 
@@ -130,10 +210,7 @@ SOURCE CODE
           content: `PROFILE:\n${PROFILE}`,
         },
         ...sanitizedHistory,
-        {
-          role: "user",
-          content: message,
-        },
+        { role: "user", content: normalizedMessage },
       ],
     };
 
@@ -173,6 +250,12 @@ SOURCE CODE
         ?.trim() ||
       "Sorry, I couldn't generate a response.";
 
+    appendMessage(conversationId, {
+      sender: "assistant",
+      role: "assistant",
+      content: reply,
+    });
+
     return {
       statusCode: 200,
       headers: {
@@ -181,7 +264,7 @@ SOURCE CODE
         "Access-Control-Allow-Origin": "*",
         "Access-Control-Allow-Headers": "Content-Type",
       },
-      body: JSON.stringify({ reply }),
+      body: JSON.stringify({ status, reply, sender: "assistant" }),
     };
   } catch (e) {
     return {
