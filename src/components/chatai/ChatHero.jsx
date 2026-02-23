@@ -17,9 +17,6 @@ const STATUS = {
   CLOSED: "closed",
 };
 
-const CONVERSATION_ID_KEY = "portfolio_chat_conversation_id";
-const MESSAGES_KEY_PREFIX = "portfolio_chat_messages_";
-const PARTICIPANT_TOKEN_KEY_PREFIX = "portfolio_chat_participant_token_";
 const SHOW_HUMAN_TAKEOVER_BUTTON = false;
 
 const createConversationId = () => {
@@ -30,53 +27,24 @@ const createConversationId = () => {
 };
 
 const getInitialConversationId = () => {
-  if (typeof window === "undefined") {
-    return createConversationId();
-  }
-
-  const existing = window.localStorage.getItem(CONVERSATION_ID_KEY);
-  if (existing) return existing;
-
-  const next = createConversationId();
-  window.localStorage.setItem(CONVERSATION_ID_KEY, next);
-  return next;
+  return createConversationId();
 };
 
-const getInitialMessages = (conversationId) => {
-  if (typeof window === "undefined") return [];
+const getInitialMessages = () => [];
 
-  const raw = window.localStorage.getItem(`${MESSAGES_KEY_PREFIX}${conversationId}`);
-  if (!raw) return [];
-
-  try {
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
-  }
-};
-
-const getParticipantToken = (conversationId) => {
-  if (typeof window === "undefined") return "";
-  const key = `${PARTICIPANT_TOKEN_KEY_PREFIX}${conversationId}`;
-  const existing = window.localStorage.getItem(key);
-  if (existing) return existing;
-  const next =
-    (typeof crypto !== "undefined" && crypto.randomUUID
-      ? crypto.randomUUID()
-      : `pt-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`);
-  window.localStorage.setItem(key, next);
-  return next;
-};
+const getParticipantToken = () =>
+  typeof crypto !== "undefined" && crypto.randomUUID
+    ? crypto.randomUUID()
+    : `pt-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
 
 export default function ChatBox() {
   const messagesContainerRef = useRef(null);
   const [conversationId] = useState(getInitialConversationId);
-  const [participantToken] = useState(() => getParticipantToken(conversationId));
+  const [participantToken] = useState(getParticipantToken);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [conversationStatus, setConversationStatus] = useState(STATUS.AI_ACTIVE);
-  const [messages, setMessages] = useState(() => getInitialMessages(conversationId));
+  const [messages, setMessages] = useState(getInitialMessages);
 
   const isAdminSession = useMemo(() => {
     if (typeof window === "undefined") return false;
@@ -141,14 +109,6 @@ export default function ChatBox() {
       // ignore sync errors
     }
   };
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    window.localStorage.setItem(
-      `${MESSAGES_KEY_PREFIX}${conversationId}`,
-      JSON.stringify(messages)
-    );
-  }, [messages, conversationId]);
 
   useEffect(() => {
     syncConversationFromServer();

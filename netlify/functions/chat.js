@@ -219,7 +219,7 @@ BASICS
 SUMMARY
 - 2+ years in front-end development, building MERN-stack applications and progressing toward strong full-stack ownership.
 - Freelance experience delivering WordPress websites for small businesses.
-- Team-based freelance delivery with circulardesign.io (1 year).
+- Team-based freelance delivery experience (1 year).
 - Builds AI agents and Retrieval-Augmented Generation (RAG) applications for portfolio and real-world use cases.
 
 CORE SKILLS
