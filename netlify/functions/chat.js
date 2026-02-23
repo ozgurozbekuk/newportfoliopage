@@ -214,7 +214,7 @@ If a question is ambiguous, ask one clarifying question and provide a best-effor
     const PROFILE = `
 BASICS
 - Name: Özgür Özbek
-- Role: Full-stack Developer (React, Next.js, Node.js, TypeScript) with Python/AI focus
+- Role: Full-stack Developer (React, Next.js, Node.js, TypeScript) with AI focus
 
 SUMMARY
 - 2+ years in front-end development, building MERN-stack applications and progressing toward strong full-stack ownership.
@@ -226,7 +226,7 @@ CORE SKILLS
 - Frontend: React, Next.js, TypeScript
 - Backend: Node.js, Express
 - Databases: MongoDB, PostgreSQL
-- AI/Python: Python, AI agent development, RAG pipeline architecture, and LLM integrations
+- AI: AI agent development, RAG pipeline architecture, and LLM integrations
 
 WORK HIGHLIGHTS
 - Built and shipped web projects end-to-end (scope → UI → integration → deployment-ready deliverables).

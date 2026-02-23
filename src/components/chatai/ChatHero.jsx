@@ -1,5 +1,5 @@
 import { Bot, Send } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 const QUICK_PROMPTS = [
   "Can you introduce Özgür?",
@@ -20,6 +20,7 @@ const STATUS = {
 const CONVERSATION_ID_KEY = "portfolio_chat_conversation_id";
 const MESSAGES_KEY_PREFIX = "portfolio_chat_messages_";
 const PARTICIPANT_TOKEN_KEY_PREFIX = "portfolio_chat_participant_token_";
+const SHOW_HUMAN_TAKEOVER_BUTTON = false;
 
 const createConversationId = () => {
   if (typeof crypto !== "undefined" && crypto.randomUUID) {
@@ -69,6 +70,7 @@ const getParticipantToken = (conversationId) => {
 };
 
 export default function ChatBox() {
+  const messagesContainerRef = useRef(null);
   const [conversationId] = useState(getInitialConversationId);
   const [participantToken] = useState(() => getParticipantToken(conversationId));
   const [input, setInput] = useState("");
@@ -159,6 +161,14 @@ export default function ChatBox() {
 
     return () => clearInterval(intervalId);
   }, [conversationId]);
+
+  useEffect(() => {
+    if (!messagesContainerRef.current) return;
+    messagesContainerRef.current.scrollTo({
+      top: messagesContainerRef.current.scrollHeight,
+      behavior: "smooth",
+    });
+  }, [messages, loading]);
 
   const requestHumanTakeover = async () => {
     if (loading || conversationStatus === STATUS.HUMAN) return;
@@ -288,7 +298,7 @@ export default function ChatBox() {
         </div>
 
         <div className="mb-2 flex-1 min-h-0 rounded-xl border border-slate-200 bg-slate-50 p-2 sm:p-3">
-          <div className="h-full overflow-y-auto">
+          <div ref={messagesContainerRef} className="h-full overflow-y-auto">
             <div className="flex flex-col gap-4">
               {messages.length === 0 ? (
                 <div className="flex items-start gap-3">
@@ -380,13 +390,15 @@ export default function ChatBox() {
               ))}
             </div>
 
-            <button
-              onClick={requestHumanTakeover}
-              disabled={loading || conversationStatus !== STATUS.AI_ACTIVE}
-              className="w-full cursor-pointer rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-800 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              💬 Talk directly with Özgür
-            </button>
+            {SHOW_HUMAN_TAKEOVER_BUTTON && (
+              <button
+                onClick={requestHumanTakeover}
+                disabled={loading || conversationStatus !== STATUS.AI_ACTIVE}
+                className="w-full cursor-pointer rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-800 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                💬 Talk directly with Özgür
+              </button>
+            )}
           </div>
 
           <div className="mx-auto mt-2 flex w-full max-w-3xl flex-col gap-2 sm:flex-row">
