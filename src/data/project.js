@@ -1,5 +1,21 @@
 const PROJECTS = [
   {
+    title: "AI Organisation – Multi-Agent Strategy Debate Platform",
+    categories: ["Fullstack", "AI"],
+    description:
+      "A real-time multi-agent decision workspace where AI departments such as Strategy, Finance, Legal, and Engineering collaborate in structured debates to evaluate business decisions. Users can create sessions, define context, and observe live moderated discussions between specialised AI agents. Each session produces a structured summary and exportable executive brief, enabling faster, more transparent, and well-reasoned strategic decision-making. Built as a full-stack application with real-time streaming, persistent session history, and PDF export functionality.",
+    tech: [
+      "Fullstack",
+      "AI Agents",
+      "Real-time Streaming",
+      "Session History",
+      "PDF Export",
+    ],
+    image: "images/aiorg.png",
+    github: "https://github.com/ozgurozbekuk/agent-arena",
+    demo: "https://aiorg.online",
+  },
+  {
     title:
       " AI application built with a Retrieval-Augmented Generation (RAG) architecture to provide reliable, context-aware information about the UK asylum and immigration process.",
     categories: ["Next.js", "Fullstack", "AI"],
