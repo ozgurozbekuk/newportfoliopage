@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Home from "./pages/home/Home";
 import Header from "./components/header/Header";
-import About from "./pages/about/About";
 import Projects from "./pages/projects/Projects";
 import Contact from "./pages/contact/Contact";
 import Footer from "./components/footer/Footer";
@@ -75,7 +74,6 @@ function App() {
         <Header ME={ME} />
         <Routes>
           <Route path="/" element={<Home ME={ME} />} />
-          <Route path="/about" element={<About ME={ME} />} />
           <Route path="/contact" element={<Contact ME={ME} />} />
           <Route path="/projects" element={<Projects ME={ME} />} />
           <Route path="/notes" element={<NotesList />} />

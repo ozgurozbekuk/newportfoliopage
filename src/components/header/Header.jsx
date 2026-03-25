@@ -25,11 +25,6 @@ const Header = ({ ME }) => {
               </Link>
             </li>
             <li>
-              <Link to="/about" className="hover:text-slate-900">
-                About
-              </Link>
-            </li>
-            <li>
               <Link to="/projects" className="hover:text-slate-900">
                 Projects
               </Link>
@@ -86,11 +81,6 @@ const Header = ({ ME }) => {
             <li>
               <Link to="/" onClick={() => setOpen(false)}>
                 Home
-              </Link>
-            </li>
-            <li>
-              <Link to="/about" onClick={() => setOpen(false)}>
-                About
               </Link>
             </li>
             <li>
